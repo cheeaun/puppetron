@@ -75,12 +75,18 @@ require('http').createServer(async (req, res) => {
 
     if (action === 'render'){
       await page.evaluate(() => {
+        // Remove scripts except JSON-LD
         const scripts = document.querySelectorAll('script:not([type="application/ld+json"])');
         scripts.forEach(s => s.parentNode.removeChild(s));
+
+        // Remove import tags
         const imports = document.querySelectorAll('link[rel=import]');
         imports.forEach(i => i.parentNode.removeChild(i));
       });
+
       let content = await page.content();
+
+      // Remove comments
       content = content.replace(/<!--[\s\S]*?-->/g, '');
 
       // page.close();
