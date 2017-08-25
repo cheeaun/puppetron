@@ -88,6 +88,13 @@ formtron.render.onclick = function(){
   action = 'render';
 }
 var protocol = 'https://';
+formtron.url.onpaste = function(e){
+  const text = e.clipboardData.getData('text');
+  if (/https?:\/\//.test(text)) {
+    e.preventDefault();
+    formtron.url.value = text;
+  }
+}
 formtron.url.onfocus = function(){
   if (formtron.url.value.trim() == '') {
     formtron.url.value = protocol;
