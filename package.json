@@ -7,8 +7,8 @@
     "start": "node index"
   },
   "dependencies": {
-    "lru-cache": "^4.1.1",
-    "puppeteer": "^0.10.0",
-    "sharp": "^0.18.2"
+    "lru-cache": "~4.1.1",
+    "puppeteer": "~0.10.0",
+    "sharp": "~0.18.2"
   }
 }
