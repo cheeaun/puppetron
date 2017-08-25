@@ -1,10 +1,13 @@
+const fs = require('fs');
 const http = require('http');
+const { URL } = require('url');
+
 const puppeteer = require('puppeteer');
 const sharp = require('sharp');
-const { URL } = require('url');
 const LRU = require('lru-cache');
 const cache = LRU({
   max: 15,
+  maxAge: 1000 * 60, // 1 minute
   dispose: (url, page) => {
     console.log('Disposing ' + url);
     if (page) page.close();
@@ -19,34 +22,35 @@ let browser;
 require('http').createServer(async (req, res) => {
   const [_, action, url] = req.url.match(/^\/(screenshot|render)?\/?(.*)/i) || ['', '', ''];
 
+  if (!url){
+    res.writeHead(200, {
+      'content-type': 'text/html; charset=utf-8',
+      'cache-control': 'public,max-age=31536000',
+    });
+    res.end(fs.readFileSync('index.html'));
+    return;
+  }
+
   if (url == 'favicon.ico'){
     res.writeHead(204);
     res.end();
     return;
   }
 
-  if (!url){
-    res.end('Append a URL pls.');
-    return;
-  }
-
   try {
-    new URL(url);
-
-    let page = cache.get(url);
+    const u = new URL(url);
+    const pageURL = u.origin + decodeURIComponent(u.pathname);
+    
+    let page = cache.get(pageURL);
     if (!page) {
-      console.log('Fetching ' + url);
+      console.log('Fetching ' + pageURL);
       if (!browser) {
         browser = await puppeteer.launch({args: ['--no-sandbox']});
       }
       page = await browser.newPage();
-      page.setViewport({
-        width: 1024,
-        height: 768,
-      });
   
       await page.setRequestInterceptionEnabled(true);
-      page.on('request', request => {
+      page.on('request', (request) => {
         const { url } = request;
         if (blockedRegExp.test(url)){
           console.log('Blocked ' + url);
@@ -55,10 +59,10 @@ require('http').createServer(async (req, res) => {
           request.continue();
         }
       });
-      await page.goto(url, {
+      await page.goto(pageURL, {
         waitUntil: 'networkidle',
       });
-      cache.set(url, page);
+      cache.set(pageURL, page);
     }
 
     if (action === 'render'){
@@ -81,10 +85,15 @@ require('http').createServer(async (req, res) => {
       return;
     }
     
-    const screenshot = await page.screenshot();
-    const image = sharp(screenshot).resize(320).jpeg({
-      quality: 90,
-      progressive: true,
+    const width = parseInt(u.searchParams.get('width'), 10) || 1024;
+    const height = parseInt(u.searchParams.get('height'), 10) || 768;
+    const thumbWidth = parseInt(u.searchParams.get('thumbWidth'), 10) || null;
+    page.setViewport({
+      width,
+      height,
+    });
+    const screenshot = await page.screenshot({
+      type: 'jpeg',
     });
 
     // page.close();
@@ -93,7 +102,16 @@ require('http').createServer(async (req, res) => {
       'content-type': 'image/jpg',
       'cache-control': 'public,max-age=31536000,immutable',
     });
-    image.pipe(res);
+
+    if (thumbWidth && thumbWidth < width){
+      const image = sharp(screenshot).resize(thumbWidth).jpeg({
+        quality: 90,
+        progressive: true,
+      });
+      image.pipe(res);
+    } else {
+      res.end(screenshot, 'binary');
+    }
   } catch (e) {
     res.end('Oops. Invalid URL.');
   }

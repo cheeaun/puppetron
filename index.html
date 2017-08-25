@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Puppetron</title>
+<link href="https://fonts.googleapis.com/css?family=Signika:400,700" rel="stylesheet">
+<style>
+  body, * {
+    font-family: Signika, sans-serif;
+    font-weight: 400;
+    color: #00667A;
+    text-align: center;
+  }
+  body, button, input {
+    font-size: 30px;
+  }
+  h1 {
+    font-weight: 700;
+    font-size: 60px;
+    text-shadow: 0 1px 20px #60E8EE;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  input[type=url]{
+    display: block;
+    width: 90%;
+    max-width: 600px;
+    padding: .45em 1em;
+    margin: auto auto 1em;
+    border: 0;
+    border-radius: 0;
+    background-color: #D7FCFD;
+  }
+  input[type=url]:focus{
+    outline: 3px solid #00667A;
+  }
+  button {
+    border-radius: 0;
+    border: 0;
+    padding: .45em 1em;
+    margin: auto auto 1em;
+    width: 90%;
+    max-width: 295px;
+    color: rgba(255,255,255,.75);
+    background-color: #00667A;
+    box-shadow: 0 1px 10px #60E8EE;
+  }
+  button:hover {
+    color: rgba(255,255,255,1);
+    box-shadow: 0 1px 30px #60E8EE;
+    text-shadow: 0 0 5px #60E8EE;
+  }
+  button:active {
+    color: rgba(255,255,255,.55);
+    transform: scale(.95);
+  }
+  footer {
+    font-size: 16px;
+  }
+</style>
+<h1>Puppetron</h1>
+<form id="formtron">
+  <input type="url" name="url" required placeholder="Enter a URL">
+  <button name="screenshot">Take screenshot</button>
+  <button name="render">Render &amp; serialize</button>
+</form>
+<footer><p>Very inspired by <a href="https://render-tron.appspot.com/" target="_blank">Rendertron</a>. Available on <a href="https://github.com/cheeaun/puppetron" target="_blank">GitHub</a>.</p></footer>
+<script>
+function encode(url){
+  return url.replace(/\?.*/i, function(m){
+    return encodeURIComponent(m);
+  });
+}
+var action;
+formtron.onsubmit = function(e){
+  e.preventDefault();
+  var url = '/' + action + '/' + encode(formtron.url.value);
+  if (action == 'screenshot'){
+    location.href = url + '?width=' + window.innerWidth + '&height=' + window.innerHeight;
+  } else {
+    location.href = url;
+  }
+}
+formtron.screenshot.onclick = function(){
+  action = 'screenshot';
+}
+formtron.render.onclick = function(){
+  action = 'render';
+}
+var protocol = 'https://';
+formtron.url.onfocus = function(){
+  if (formtron.url.value.trim() == '') {
+    formtron.url.value = protocol;
+  }
+}
+formtron.url.onblur = function(){
+  if (formtron.url.value.trim() == protocol) {
+    formtron.url.value = '';
+  }
+}
+</script>
