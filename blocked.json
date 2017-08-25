@@ -23,11 +23,7 @@
   "render": [
     "fonts.googleapis.com",
     "use.typekit.net",
-    "\\.ttf",
     "fast.fonts.com",
-    "youtube.com\/embed",
-    "\\.eot",
-    "\\.otf",
-    "\\.woff"
+    "youtube.com\/embed"
   ]
 }
