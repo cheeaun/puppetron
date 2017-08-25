@@ -12,9 +12,7 @@ const cache = LRU({
 });
 
 const blocked = require('./blocked.json');
-const allBlocked = new RegExp('(' + blocked.all.join('|') + ')', 'i');
-const renderBlocked = new RegExp('(' + blocked.render.join('|') + ')', 'i');
-const assetsBlocked = /\.(png|jpg|jpeg|gif|webp|svg|bmp|tiff|ttf|ico|eot|otf|woff|woff2)$/i;
+const blockedRegExp = new RegExp('(' + blocked.join('|') + ')', 'i');
 
 let browser;
 
@@ -50,7 +48,7 @@ require('http').createServer(async (req, res) => {
       await page.setRequestInterceptionEnabled(true);
       page.on('request', request => {
         const { url } = request;
-        if (allBlocked.test(url) || (action === 'render' && assetsBlocked.test(url) || renderBlocked.test(url))){
+        if (blockedRegExp.test(url)){
           console.log('Blocked ' + url);
           request.abort();
         } else {
