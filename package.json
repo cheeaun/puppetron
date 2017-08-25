@@ -7,6 +7,7 @@
     "start": "node index"
   },
   "dependencies": {
-    "puppeteer": "^0.9.0"
+    "puppeteer": "^0.10.0",
+    "sharp": "^0.18.2"
   }
 }
