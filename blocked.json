@@ -1,0 +1,33 @@
+{
+  "all": [
+    "google-analytics.com",
+    "api.mixpanel.com",
+    "stats.g.doubleclick.net",
+    "mc.yandex.ru",
+    "beacon.tapfiliate.com",
+    "js-agent.newrelic.com",
+    "api.segment.io",
+    "woopra.com",
+    "static.olark.com",
+    "static.getclicky.com",
+    "cdn.heapanalytics.com",
+    "googleads.g.doubleclick.net",
+    "pagead2.googlesyndication.com",
+    "fullstory.com/rec",
+    "navilytics.com/nls_ajax.php",
+    "log.optimizely.com/event",
+    "hn.inspectlet.com",
+    "tpc.googlesyndication.com",
+    "partner.googleadservices.com"
+  ],
+  "render": [
+    "fonts.googleapis.com",
+    "use.typekit.net",
+    "\\.ttf",
+    "fast.fonts.com",
+    "youtube.com\/embed",
+    "\\.eot",
+    "\\.otf",
+    "\\.woff"
+  ]
+}

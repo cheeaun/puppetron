@@ -29,4 +29,6 @@ To screenshot a URL, append the URL, e.g. `localhost:8080/http://google.com`.
 Credits
 ---
 
+Block list from [Prerender](https://github.com/prerender/prerender/blob/master/lib/resources/blocked-resources.json).
+
 This uses [`zenato/puppeteer`](https://hub.docker.com/r/zenato/puppeteer/) Docker image. Inspired by [`puppeteer-renderer`](https://github.com/zenato/puppeteer-renderer).

@@ -3,6 +3,10 @@ const puppeteer = require('puppeteer');
 const sharp = require('sharp');
 const { URL } = require('url');
 
+const blocked = require('./blocked.json');
+const allBlocked = new RegExp('(' + blocked.all.join('|') + ')', 'i');
+const renderBlocked = new RegExp('(' + blocked.render.join('|') + ')', 'i');
+
 let browser;
 
 require('http').createServer(async (req, res) => {
@@ -19,9 +23,9 @@ require('http').createServer(async (req, res) => {
     return;
   }
 
-  console.log('Fetching ' + url);
   try {
     new URL(url);
+    console.log('Fetching ' + url);
     if (!browser) {
       browser = await puppeteer.launch({args: ['--no-sandbox']});
     }
@@ -29,6 +33,17 @@ require('http').createServer(async (req, res) => {
     page.setViewport({
       width: 1024,
       height: 768,
+    });
+
+    await page.setRequestInterceptionEnabled(true);
+    page.on('request', request => {
+      const { url } = request;
+      if (allBlocked.test(url) || (action === 'render' && renderBlocked.test(url))){
+        console.log('Blocked ' + url);
+        request.abort();
+      } else {
+        request.continue();
+      }
     });
     await page.goto(url, {
       waitUntil: 'networkidle',
@@ -38,27 +53,30 @@ require('http').createServer(async (req, res) => {
       await page.evaluate(() => {
         const scripts = document.querySelectorAll('script:not([type="application/ld+json"])');
         scripts.forEach(s => s.parentNode.removeChild(s));
-        const iframes = document.querySelectorAll('iframe');
-        iframes.forEach(i => i.parentNode.removeChild(i));
+        const imports = document.querySelectorAll('link[rel=import]');
+        imports.forEach(i => i.parentNode.removeChild(i));
       });
       let content = await page.content();
       content = content.replace(/<!--[\s\S]*?-->/g, '');
+
+      page.close();
       
       res.writeHead(200, {
-        'content-type': 'text/html',
+        'content-type': 'text/html; charset=UTF-8',
         'cache-control': 'public,max-age=31536000',
       });
-      
       res.end(content);
       return;
     }
     
     const screenshot = await page.screenshot();
-    page.close();
     const image = sharp(screenshot).resize(320).jpeg({
       quality: 90,
       progressive: true,
     });
+
+    page.close();
+
     res.writeHead(200, {
       'content-type': 'image/jpg',
       'cache-control': 'public,max-age=31536000,immutable',
@@ -66,7 +84,6 @@ require('http').createServer(async (req, res) => {
     image.pipe(res);
     // res.end(image, 'binary');
   } catch (e) {
-    console.error(e);
     res.end('Oops. Invalid URL.');
   }
 }).listen(process.env.PORT || 3000);
