@@ -82,6 +82,11 @@ require('http').createServer(async (req, res) => {
         // Remove import tags
         const imports = document.querySelectorAll('link[rel=import]');
         imports.forEach(i => i.parentNode.removeChild(i));
+
+        // Inject <base> for loading relative resources
+        const base = document.createElement('base');
+        base.setAttribute('href', location.origin + location.pathname);
+        document.head.appendChild(base);
       });
 
       let content = await page.content();
