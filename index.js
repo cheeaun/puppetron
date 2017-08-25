@@ -2,6 +2,14 @@ const http = require('http');
 const puppeteer = require('puppeteer');
 const sharp = require('sharp');
 const { URL } = require('url');
+const LRU = require('lru-cache');
+const cache = LRU({
+  max: 15,
+  dispose: (url, page) => {
+    console.log('Disposing ' + url);
+    if (page) page.close();
+  }
+});
 
 const blocked = require('./blocked.json');
 const allBlocked = new RegExp('(' + blocked.all.join('|') + ')', 'i');
@@ -26,29 +34,34 @@ require('http').createServer(async (req, res) => {
 
   try {
     new URL(url);
-    console.log('Fetching ' + url);
-    if (!browser) {
-      browser = await puppeteer.launch({args: ['--no-sandbox']});
-    }
-    const page = await browser.newPage();
-    page.setViewport({
-      width: 1024,
-      height: 768,
-    });
 
-    await page.setRequestInterceptionEnabled(true);
-    page.on('request', request => {
-      const { url } = request;
-      if (allBlocked.test(url) || (action === 'render' && assetsBlocked.test(url) || renderBlocked.test(url))){
-        console.log('Blocked ' + url);
-        request.abort();
-      } else {
-        request.continue();
+    let page = cache.get(url);
+    if (!page) {
+      console.log('Fetching ' + url);
+      if (!browser) {
+        browser = await puppeteer.launch({args: ['--no-sandbox']});
       }
-    });
-    await page.goto(url, {
-      waitUntil: 'networkidle',
-    });
+      page = await browser.newPage();
+      page.setViewport({
+        width: 1024,
+        height: 768,
+      });
+  
+      await page.setRequestInterceptionEnabled(true);
+      page.on('request', request => {
+        const { url } = request;
+        if (allBlocked.test(url) || (action === 'render' && assetsBlocked.test(url) || renderBlocked.test(url))){
+          console.log('Blocked ' + url);
+          request.abort();
+        } else {
+          request.continue();
+        }
+      });
+      await page.goto(url, {
+        waitUntil: 'networkidle',
+      });
+      cache.set(url, page);
+    }
 
     if (action === 'render'){
       await page.evaluate(() => {
@@ -60,7 +73,7 @@ require('http').createServer(async (req, res) => {
       let content = await page.content();
       content = content.replace(/<!--[\s\S]*?-->/g, '');
 
-      page.close();
+      // page.close();
       
       res.writeHead(200, {
         'content-type': 'text/html; charset=UTF-8',
@@ -76,14 +89,13 @@ require('http').createServer(async (req, res) => {
       progressive: true,
     });
 
-    page.close();
+    // page.close();
 
     res.writeHead(200, {
       'content-type': 'image/jpg',
       'cache-control': 'public,max-age=31536000,immutable',
     });
     image.pipe(res);
-    // res.end(image, 'binary');
   } catch (e) {
     res.end('Oops. Invalid URL.');
   }
