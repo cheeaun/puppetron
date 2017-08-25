@@ -1,7 +1,7 @@
-puppeteer-screenshot
+Puppetron
 ===
 
-> [Puppeteer](https://github.com/GoogleChrome/puppeteer) (Headless Chrome Node API)-based web page screenshot-er.
+> [Puppeteer](https://github.com/GoogleChrome/puppeteer) (Headless Chrome Node API)-based rendering solution.
 
 Requirements
 ---
