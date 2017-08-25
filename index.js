@@ -20,9 +20,7 @@ const blockedRegExp = new RegExp('(' + blocked.join('|') + ')', 'i');
 let browser;
 
 require('http').createServer(async (req, res) => {
-  const [_, action, url] = req.url.match(/^\/(screenshot|render)?\/?(.*)/i) || ['', '', ''];
-
-  if (!url){
+  if (req.url == '/'){
     res.writeHead(200, {
       'content-type': 'text/html; charset=utf-8',
       'cache-control': 'public,max-age=31536000',
@@ -31,9 +29,19 @@ require('http').createServer(async (req, res) => {
     return;
   }
 
-  if (url == 'favicon.ico'){
+  if (req.url == '/favicon.ico'){
     res.writeHead(204);
     res.end();
+    return;
+  }
+
+  const [_, action, url] = req.url.match(/^\/(screenshot|render)?\/?(.*)/i) || ['', '', ''];
+
+  if (!url){
+    res.writeHead(400, {
+      'content-type': 'text/plain',
+    });
+    res.end('Something is wrong. Missing URL.');
     return;
   }
 
@@ -113,7 +121,11 @@ require('http').createServer(async (req, res) => {
       res.end(screenshot, 'binary');
     }
   } catch (e) {
-    res.end('Oops. Invalid URL.');
+    const { message = '' } = e;
+    res.writeHead(400, {
+      'content-type': 'text/plain',
+    });
+    res.end('Oops. Something is wrong.\n\n' + message);
   }
 }).listen(process.env.PORT || 3000);
 
