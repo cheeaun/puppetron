@@ -50,7 +50,7 @@ require('http').createServer(async (req, res) => {
   let pageURL;
   try {
     const u = new URL(url);
-    const pageURL = u.origin + decodeURIComponent(u.pathname);
+    pageURL = u.origin + decodeURIComponent(u.pathname);
     const { searchParams } = u;
     
     let page = cache.get(pageURL);
