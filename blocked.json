@@ -17,5 +17,11 @@
   "log.optimizely.com/event",
   "hn.inspectlet.com",
   "tpc.googlesyndication.com",
-  "partner.googleadservices.com"
+  "partner.googleadservices.com",
+  "pixel.quantserve.com",
+  "pixel.mathtag.com",
+  "pixel.rubiconproject.com",
+  "logx.optimizely.com",
+  "akstat.io",
+  "go-mpulse.net"
 ]
