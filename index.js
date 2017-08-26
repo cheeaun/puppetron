@@ -78,10 +78,12 @@ require('http').createServer(async (req, res) => {
           reqCount++;
         }
       });
+
       console.log('⬇️ Fetching ' + pageURL);
       await page.goto(pageURL, {
         waitUntil: 'networkidle',
       });
+      
       cache.set(pageURL, page);
     }
 
