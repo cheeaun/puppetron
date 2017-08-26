@@ -17,6 +17,8 @@ const cache = LRU({
 const blocked = require('./blocked.json');
 const blockedRegExp = new RegExp('(' + blocked.join('|') + ')', 'i');
 
+const truncate = (str, len) => str.length > len ? str.slice(0, len) + '…' : str;
+
 let browser;
 
 require('http').createServer(async (req, res) => {
@@ -64,7 +66,7 @@ require('http').createServer(async (req, res) => {
       page.on('request', (request) => {
         const { url } = request;
         const seconds = (+new Date() - nowTime) / 1000;
-        const shortURL = url.slice(0, 140);
+        const shortURL = truncate(url, 70);
         // Abort requests that exceeds 15 seconds
         // Also abort if more than 100 requests
         if (seconds > 15 || reqCount > 100){
