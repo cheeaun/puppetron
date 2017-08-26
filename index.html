@@ -22,11 +22,11 @@
     box-sizing: border-box;
   }
   input[type=url]{
-    display: block;
+    display: inline-block;
     width: 90%;
     max-width: 600px;
     padding: .45em;
-    margin: auto auto 1em;
+    margin: .5em;
     border: 0;
     border-radius: 0;
     background-color: #D7FCFD;
@@ -38,9 +38,9 @@
     border-radius: 0;
     border: 0;
     padding: .45em 1em;
-    margin: auto auto 1em;
+    margin: .5em;
     width: 90%;
-    max-width: 295px;
+    max-width: 15ex;
     color: rgba(255,255,255,.75);
     background-color: #00667A;
     box-shadow: 0 1px 10px #60E8EE;
@@ -61,8 +61,10 @@
 <h1>Puppetron</h1>
 <form id="formtron">
   <input type="url" name="url" required placeholder="Enter a URL">
-  <button name="screenshot">Take screenshot</button>
-  <button name="render">Render &amp; serialize</button>
+  <br/>
+  <button name="screenshot">Screenshot</button>
+  <button name="render">Render</button>
+  <button name="pdf">PDF</button>
 </form>
 <footer><p>Very inspired by <a href="https://github.com/GoogleChrome/rendertron" target="_blank">Rendertron</a>. Available on <a href="https://github.com/cheeaun/puppetron" target="_blank">GitHub</a>.</p></footer>
 <script>
@@ -86,6 +88,9 @@ formtron.screenshot.onclick = function(){
 }
 formtron.render.onclick = function(){
   action = 'render';
+}
+formtron.pdf.onclick = function(){
+  action = 'pdf';
 }
 var protocol = 'https://';
 formtron.url.onpaste = function(e){
