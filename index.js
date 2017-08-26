@@ -6,7 +6,7 @@ const puppeteer = require('puppeteer');
 const sharp = require('sharp');
 const LRU = require('lru-cache');
 const cache = LRU({
-  max: 15, // max 15 tabs
+  max: process.env.CACHE_SIZE || 3, // max 3 tabs
   maxAge: 1000 * 60, // 1 minute
   dispose: (url, page) => {
     console.log('Disposing ' + url);
