@@ -150,6 +150,7 @@ require('http').createServer(async (req, res) => {
       }
     }
   } catch (e) {
+    console.error(e);
     const { message = '' } = e;
     res.writeHead(400, {
       'content-type': 'text/plain',
