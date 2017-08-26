@@ -47,6 +47,7 @@ require('http').createServer(async (req, res) => {
     return;
   }
 
+  let pageURL;
   try {
     const u = new URL(url);
     const pageURL = u.origin + decodeURIComponent(u.pathname);
@@ -166,6 +167,7 @@ require('http').createServer(async (req, res) => {
       }
     }
   } catch (e) {
+    cache.del(pageURL);
     console.error(e);
     const { message = '' } = e;
     res.writeHead(400, {
