@@ -2,14 +2,60 @@
 
 > [Puppeteer](https://github.com/GoogleChrome/puppeteer) (Headless Chrome Node API)-based rendering solution.
 
-Requirements
+API
 ---
 
-- Node.js
-- Docker
+**`URL`** - the URL with encoded `pathname`, `search` and `hash`.
+
+### Screenshot
+
+```
+/screenshot/{URL}
+
+...or
+
+/{URL}
+```
+
+Parameters:
+
+- `width` - width of screenshot (default: `1024`)
+- `height` - height of screenshot (default: `768`)
+- `thumbWidth` - width of thumbnail, respecting aspect ratio (no default, has to be smaller than `width`)
+
+### Render
+
+```
+/render/{URL}
+```
+
+Notes:
+
+- `script` tags except `JSON-LD` will be removed
+- `link[rel=import]` tags will be removed
+- HTML comments will be removed
+- `base` tag will be added for loading relative resources
+
+Parameters: *None*
+
+### PDF
+
+```
+/pdf/{URL}
+```
+
+Parameters:
+
+- `format`: Paper format that [Puppeteer supports](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#pagepdfoptions). E.g.: `Letter`, `Legal`, `A4`, etc. (default: `Letter`)
+- `pageRanges`: Paper ranges to print. E.g., `1-5`, `8`, `11-13` (default all pages)
 
 Development
 ---
+
+### Requirements
+
+- Node.js
+- Docker
 
 For local Chromium install:
 
@@ -23,7 +69,7 @@ For Docker-based install:
 2. `docker run -p 8080:3000 puppet`
 3. Load `localhost:8080`
 
-To screenshot a URL, append the URL, e.g. `localhost:8080/http://google.com`.
+[![Deploy to now](https://deploy.now.sh/static/button.svg)](https://deploy.now.sh/?repo=https://github.com/cheeaun/puppetron)
 
 Credits
 ---
