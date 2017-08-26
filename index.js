@@ -9,7 +9,7 @@ const cache = LRU({
   max: process.env.CACHE_SIZE || 3, // max 3 tabs
   maxAge: 1000 * 60, // 1 minute
   dispose: (url, page) => {
-    console.log('Disposing ' + url);
+    console.log('🗑 Disposing ' + url);
     if (page) page.close();
   }
 });
@@ -52,22 +52,33 @@ require('http').createServer(async (req, res) => {
     
     let page = cache.get(pageURL);
     if (!page) {
-      console.log('Fetching ' + pageURL);
       if (!browser) {
+        console.log('🚀 Launch browser!');
         browser = await puppeteer.launch({args: ['--no-sandbox']});
       }
       page = await browser.newPage();
-  
+
+      const nowTime = +new Date();
+      let reqCount = 0;
       await page.setRequestInterceptionEnabled(true);
       page.on('request', (request) => {
         const { url } = request;
-        if (blockedRegExp.test(url)){
-          console.log('Blocked ' + url);
+        const seconds = (+new Date() - nowTime) / 1000;
+        // Abort requests that exceeds 15 seconds
+        // Also abort if more than 100 requests
+        if (seconds > 15 || reqCount > 100){
+          console.log('❌⏳ ' + url);
+          request.abort();
+        } else if (blockedRegExp.test(url)){
+          console.log('❌ ' + url);
           request.abort();
         } else {
+          console.log('✅ ' + url);
           request.continue();
+          reqCount++;
         }
       });
+      console.log('⬇️ Fetching ' + pageURL);
       await page.goto(pageURL, {
         waitUntil: 'networkidle',
       });
