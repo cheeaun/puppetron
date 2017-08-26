@@ -4,6 +4,15 @@
 <title>Puppetron</title>
 <link href="https://fonts.googleapis.com/css?family=Signika:400,700" rel="stylesheet">
 <style>
+  html {
+    display: flex;
+    height: 100%;
+  }
+  body {
+    margin: auto;
+    width: 100%;
+    padding: 0 .5em;
+  }
   body, * {
     font-family: Signika, sans-serif;
     font-weight: 400;
@@ -17,6 +26,7 @@
     font-weight: 700;
     font-size: 60px;
     text-shadow: 0 1px 20px #60E8EE;
+    margin: 0 0 .25em;
   }
   * {
     box-sizing: border-box;
@@ -66,7 +76,7 @@
   <button name="render">Render</button>
   <button name="pdf">PDF</button>
 </form>
-<footer><p>Very inspired by <a href="https://github.com/GoogleChrome/rendertron" target="_blank">Rendertron</a>. Available on <a href="https://github.com/cheeaun/puppetron" target="_blank">GitHub</a>.</p></footer>
+<footer><p>Very inspired by <a href="https://github.com/GoogleChrome/rendertron" target="_blank">Rendertron</a>. Documentation and project on <a href="https://github.com/cheeaun/puppetron" target="_blank">GitHub</a>.</p></footer>
 <script>
 function encode(url){
   return url.replace(/\?.*/i, function(m){
