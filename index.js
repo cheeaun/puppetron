@@ -109,7 +109,7 @@ require('http').createServer(async (req, res) => {
           const base = document.createElement('base');
           base.setAttribute('href', location.origin + location.pathname);
           document.head.appendChild(base);
-        }), 5000);
+        }), 10 * 1000);
 
         let content = await page.content();
 
@@ -130,7 +130,7 @@ require('http').createServer(async (req, res) => {
         const pdf = await pTimeout(page.pdf({
           format,
           pageRanges,
-        }), 5000);
+        }), 10 * 1000);
         res.writeHead(200, {
           'content-type': 'application/pdf',
           'cache-control': 'public,max-age=31536000',
@@ -151,7 +151,7 @@ require('http').createServer(async (req, res) => {
         const screenshot = await pTimeout(page.screenshot({
           type: 'jpeg',
           fullPage,
-        }), 5000);
+        }), 10 * 1000);
     
         res.writeHead(200, {
           'content-type': 'image/jpeg',
