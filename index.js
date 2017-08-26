@@ -64,16 +64,17 @@ require('http').createServer(async (req, res) => {
       page.on('request', (request) => {
         const { url } = request;
         const seconds = (+new Date() - nowTime) / 1000;
+        const shortURL = url.slice(0, 140);
         // Abort requests that exceeds 15 seconds
         // Also abort if more than 100 requests
         if (seconds > 15 || reqCount > 100){
-          console.log('❌⏳ ' + url);
+          console.log('❌⏳ ' + shortURL);
           request.abort();
         } else if (blockedRegExp.test(url)){
-          console.log('❌ ' + url);
+          console.log('❌ ' + shortURL);
           request.abort();
         } else {
-          console.log('✅ ' + url);
+          console.log('✅ ' + shortURL);
           request.continue();
           reqCount++;
         }
