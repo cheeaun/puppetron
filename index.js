@@ -134,7 +134,7 @@ require('http').createServer(async (req, res) => {
         });
     
         res.writeHead(200, {
-          'content-type': 'image/jpg',
+          'content-type': 'image/jpeg',
           'cache-control': 'public,max-age=31536000',
         });
 
