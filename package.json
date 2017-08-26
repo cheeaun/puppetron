@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "lru-cache": "~4.1.1",
+    "p-timeout": "~1.2.0",
     "puppeteer": "~0.10.1",
     "sharp": "~0.18.2"
   }

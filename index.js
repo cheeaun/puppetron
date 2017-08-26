@@ -4,6 +4,7 @@ const { URL } = require('url');
 
 const puppeteer = require('puppeteer');
 const sharp = require('sharp');
+const pTimeout = require('p-timeout');
 const LRU = require('lru-cache');
 const cache = LRU({
   max: process.env.CACHE_SIZE || 3, // max 3 tabs
@@ -87,13 +88,15 @@ require('http').createServer(async (req, res) => {
       await page.goto(pageURL, {
         waitUntil: 'networkidle',
       });
-      
+
       cache.set(pageURL, page);
     }
 
+    console.log('💥 Perform action: ' + action);
+
     switch (action){
       case 'render': {
-        await page.evaluate(() => {
+        await pTimeout(page.evaluate(() => {
           // Remove scripts except JSON-LD
           const scripts = document.querySelectorAll('script:not([type="application/ld+json"])');
           scripts.forEach(s => s.parentNode.removeChild(s));
@@ -106,7 +109,7 @@ require('http').createServer(async (req, res) => {
           const base = document.createElement('base');
           base.setAttribute('href', location.origin + location.pathname);
           document.head.appendChild(base);
-        });
+        }), 5000);
 
         let content = await page.content();
 
@@ -124,10 +127,10 @@ require('http').createServer(async (req, res) => {
         const format = searchParams.get('format') || null;
         const pageRanges = searchParams.get('pageRanges') || null;
 
-        const pdf = await page.pdf({
+        const pdf = await pTimeout(page.pdf({
           format,
           pageRanges,
-        });
+        }), 5000);
         res.writeHead(200, {
           'content-type': 'application/pdf',
           'cache-control': 'public,max-age=31536000',
@@ -145,10 +148,10 @@ require('http').createServer(async (req, res) => {
           width,
           height,
         });
-        const screenshot = await page.screenshot({
+        const screenshot = await pTimeout(page.screenshot({
           type: 'jpeg',
           fullPage,
-        });
+        }), 5000);
     
         res.writeHead(200, {
           'content-type': 'image/jpeg',
