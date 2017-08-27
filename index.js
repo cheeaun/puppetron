@@ -10,6 +10,7 @@ const LRU = require('lru-cache');
 const cache = LRU({
   max: process.env.CACHE_SIZE || Infinity,
   maxAge: 1000 * 60, // 1 minute
+  noDisposeOnSet: true,
   dispose: (url, page) => {
     console.log('🗑 Disposing ' + url);
     if (page && page.close) page.close();
@@ -138,40 +139,44 @@ require('http').createServer(async (req, res) => {
 
     switch (action){
       case 'render': {
-        await page.evaluate(() => {
-          // Remove scripts except JSON-LD
-          const scripts = document.querySelectorAll('script:not([type="application/ld+json"])');
-          scripts.forEach(s => s.parentNode.removeChild(s));
+        if (!cache.has(pageURL)){
+          await page.evaluate(() => {
+            // Remove scripts except JSON-LD
+            const scripts = document.querySelectorAll('script:not([type="application/ld+json"])');
+            scripts.forEach(s => s.parentNode.removeChild(s));
 
-          // Remove import tags
-          const imports = document.querySelectorAll('link[rel=import]');
-          imports.forEach(i => i.parentNode.removeChild(i));
+            // Remove import tags
+            const imports = document.querySelectorAll('link[rel=import]');
+            imports.forEach(i => i.parentNode.removeChild(i));
 
-          const { origin, pathname } = location;
-          // Inject <base> for loading relative resources
-          if (!document.querySelector('base')){
-            const base = document.createElement('base');
-            base.href = origin + pathname;
-            document.head.appendChild(base);
-          }
-
-          // Try to fix absolute paths
-          const absEls = document.querySelectorAll('link[href^="/"], script[src^="/"], img[src^="/"]');
-          absEls.forEach(el => {
-            const href = el.getAttribute('href');
-            const src = el.getAttribute('src');
-            if (src && /^\/[^/]/i.test(src)){
-              el.src = origin + src;
-            } else if (href && /^\/[^/]/i.test(href)){
-              el.href = origin + href;
+            const { origin, pathname } = location;
+            // Inject <base> for loading relative resources
+            if (!document.querySelector('base')){
+              const base = document.createElement('base');
+              base.href = origin + pathname;
+              document.head.appendChild(base);
             }
+
+            // Try to fix absolute paths
+            const absEls = document.querySelectorAll('link[href^="/"], script[src^="/"], img[src^="/"]');
+            absEls.forEach(el => {
+              const href = el.getAttribute('href');
+              const src = el.getAttribute('src');
+              if (src && /^\/[^/]/i.test(src)){
+                el.src = origin + src;
+              } else if (href && /^\/[^/]/i.test(href)){
+                el.href = origin + href;
+              }
+            });
           });
-        });
+        }
 
         let content = await pTimeout(page.content(), 10 * 1000, 'Render timed out');
 
-        // Remove comments
-        content = content.replace(/<!--[\s\S]*?-->/g, '');
+        if (!cache.has(pageURL)){
+          // Remove comments
+          content = content.replace(/<!--[\s\S]*?-->/g, '');
+        }
 
         res.writeHead(200, {
           'content-type': 'text/html; charset=UTF-8',
@@ -252,25 +257,27 @@ require('http').createServer(async (req, res) => {
 
     actionDone = true;
     console.log('💥 Done action: ' + action);
-    cache.set(pageURL, page);
+    if (!cache.has(pageURL)){
+      cache.set(pageURL, page);
 
-    // Try to stop all execution
-    page.frames().forEach((frame) => {
-      frame.evaluate(() => {
-        // Clear all timer intervals https://stackoverflow.com/a/6843415/20838
-        for (var i = 1; i < 99999; i++) window.clearInterval(i);
-        // Disable all XHR requests
-        XMLHttpRequest.prototype.send = _=>_;
-        // Disable all RAFs
-        requestAnimationFrame = _=>_;
-        // Pause all media and stop buffering
-        document.querySelectorAll('video, audio').forEach(m => {
-          if (!m) return;
-          if (m.pause) m.pause();
-          m.preload = 'none';
+      // Try to stop all execution
+      page.frames().forEach((frame) => {
+        frame.evaluate(() => {
+          // Clear all timer intervals https://stackoverflow.com/a/6843415/20838
+          for (var i = 1; i < 99999; i++) window.clearInterval(i);
+          // Disable all XHR requests
+          XMLHttpRequest.prototype.send = _=>_;
+          // Disable all RAFs
+          requestAnimationFrame = _=>_;
+          // Pause all media and stop buffering
+          document.querySelectorAll('video, audio').forEach(m => {
+            if (!m) return;
+            if (m.pause) m.pause();
+            m.preload = 'none';
+          });
         });
       });
-    });
+    }
   } catch (e) {
     if (!DEBUG && page) page.close();
     cache.del(pageURL);
