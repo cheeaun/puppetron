@@ -22,6 +22,7 @@ Parameters:
 - `width` - width of screenshot (default: `1024`)
 - `height` - height of screenshot (default: `768`)
 - `thumbWidth` - width of thumbnail, respecting aspect ratio (no default, has to be smaller than `width`)
+- `fullPage` - takes a screenshot of the full scrollable page (default: `false`). If the page is too long, it may time out.
 
 ### Render
 
