@@ -256,6 +256,7 @@ require('http').createServer(async (req, res) => {
 
     // Handle websocket not opened error
     if (/not opened/i.test(message) && browser){
+      console.error('🕸 Web socket failed');
       browser.close();
       browser = null;
     }
