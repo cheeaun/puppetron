@@ -1,5 +1,0 @@
-{
-  "name": "puppetron",
-  "type": "docker",
-  "alias": "puppetron.now.sh"
-}

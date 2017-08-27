@@ -6,6 +6,11 @@
   "scripts": {
     "start": "node index"
   },
+  "now": {
+    "name": "puppetron",
+    "type": "docker",
+    "alias": "puppetron.now.sh"
+  },
   "dependencies": {
     "lru-cache": "~4.1.1",
     "p-timeout": "~1.2.0",
