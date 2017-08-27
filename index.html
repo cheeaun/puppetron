@@ -102,7 +102,7 @@ formtron.render.onclick = function(){
 formtron.pdf.onclick = function(){
   action = 'pdf';
 }
-var protocol = 'https://';
+var protocol = 'http://';
 formtron.url.onpaste = function(e){
   const text = e.clipboardData.getData('text');
   if (/https?:\/\//.test(text)) {
