@@ -63,6 +63,14 @@ require('http').createServer(async (req, res) => {
     return;
   }
 
+  if (cache.itemCount > 20){
+    res.writeHead(420, {
+      'content-type': 'text/plain',
+    });
+    res.end(`There are ${cache.itemCount} pages in the current instance now. Please try again in few minutes.`);
+    return;
+  }
+
   let page;
   try {
     const u = new URL(url);
