@@ -206,6 +206,24 @@ require('http').createServer(async (req, res) => {
     }
 
     cache.set(pageURL, page);
+
+    // Try to stop all execution
+    page.frames().forEach((frame) => {
+      frame.evaluate(() => {
+        // Clear all timer intervals https://stackoverflow.com/a/6843415/20838
+        for (var i = 1; i < 99999; i++) window.clearInterval(i);
+        // Disable all XHR requests
+        XMLHttpRequest.prototype.send = _=>_;
+        // Disable all RAFs
+        requestAnimationFrame = _=>_;
+        // Pause all media and stop buffering
+        document.querySelectorAll('video, audio').forEach(m => {
+          if (!m) return;
+          if (m.pause) m.pause();
+          m.preload = 'none';
+        });
+      });
+    });
   } catch (e) {
     page.close();
     console.error(e);
