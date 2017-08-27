@@ -58,7 +58,12 @@ require('http').createServer(async (req, res) => {
     if (!page) {
       if (!browser) {
         console.log('🚀 Launch browser!');
-        browser = await puppeteer.launch({args: ['--no-sandbox']});
+        browser = await puppeteer.launch(process.env.DEBUG ? {
+          headless: false,
+          args: ['--no-sandbox', '--auto-open-devtools-for-tabs'],
+        } : {
+          args: ['--no-sandbox'],
+        });
       }
       page = await browser.newPage();
 
