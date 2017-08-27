@@ -182,6 +182,12 @@ require('http').createServer(async (req, res) => {
       'content-type': 'text/plain',
     });
     res.end('Oops. Something is wrong.\n\n' + message);
+
+    // Handle websocket no opened error
+    if (/not opened/i.test(message) && browser){
+      browser.close();
+      browser = null;
+    }
   }
 }).listen(process.env.PORT || 3000);
 
