@@ -12,7 +12,7 @@ const cache = LRU({
   maxAge: 1000 * 60, // 1 minute
   dispose: (url, page) => {
     console.log('🗑 Disposing ' + url);
-    if (page) page.close();
+    if (page && page.close) page.close();
   }
 });
 setInterval(() => cache.prune(), 1000 * 60); // Prune every minute
@@ -72,10 +72,10 @@ require('http').createServer(async (req, res) => {
     return;
   }
 
-  let page;
+  let page, pageURL;
   try {
     const u = new URL(url);
-    const pageURL = u.origin + decodeURIComponent(u.pathname);
+    pageURL = u.origin + decodeURIComponent(u.pathname);
     const { searchParams } = u;
     let actionDone = false;
     
@@ -246,6 +246,7 @@ require('http').createServer(async (req, res) => {
     });
   } catch (e) {
     if (!DEBUG && page) page.close();
+    cache.del(pageURL);
     console.error(e);
     const { message = '' } = e;
     res.writeHead(400, {
