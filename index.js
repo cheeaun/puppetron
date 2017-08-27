@@ -1,6 +1,7 @@
 const fs = require('fs');
 const http = require('http');
 const { URL } = require('url');
+const { DEBUG } = process.env;
 
 const puppeteer = require('puppeteer');
 const sharp = require('sharp');
@@ -82,7 +83,7 @@ require('http').createServer(async (req, res) => {
     if (!page) {
       if (!browser) {
         console.log('🚀 Launch browser!');
-        browser = await puppeteer.launch(process.env.DEBUG ? {
+        browser = await puppeteer.launch(DEBUG ? {
           headless: false,
           ignoreHTTPSErrors: true,
           args: ['--no-sandbox', '--auto-open-devtools-for-tabs'],
@@ -162,7 +163,7 @@ require('http').createServer(async (req, res) => {
           });
         });
 
-        let content = await page.content();
+        let content = await pTimeout(page.content(), 10 * 1000, 'Render timed out');
 
         // Remove comments
         content = content.replace(/<!--[\s\S]*?-->/g, '');
@@ -181,7 +182,8 @@ require('http').createServer(async (req, res) => {
         const pdf = await pTimeout(page.pdf({
           format,
           pageRanges,
-        }), 10 * 1000);
+        }), 10 * 1000, 'PDF timed out');
+
         res.writeHead(200, {
           'content-type': 'application/pdf',
           'cache-control': 'public,max-age=31536000',
@@ -202,7 +204,7 @@ require('http').createServer(async (req, res) => {
         const screenshot = await pTimeout(page.screenshot({
           type: 'jpeg',
           fullPage,
-        }), 10 * 1000);
+        }), 10 * 1000, 'Screenshot timed out');
     
         res.writeHead(200, {
           'content-type': 'image/jpeg',
@@ -243,7 +245,7 @@ require('http').createServer(async (req, res) => {
       });
     });
   } catch (e) {
-    page.close();
+    if (!DEBUG && page) page.close();
     console.error(e);
     const { message = '' } = e;
     res.writeHead(400, {
