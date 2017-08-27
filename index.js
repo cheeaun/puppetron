@@ -149,7 +149,7 @@ require('http').createServer(async (req, res) => {
         const thumbWidth = parseInt(searchParams.get('thumbWidth'), 10) || null;
         const fullPage = searchParams.get('fullPage') == 'true' || false;
         
-        page.setViewport({
+        await page.setViewport({
           width,
           height,
         });
