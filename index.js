@@ -14,6 +14,7 @@ const cache = LRU({
     if (page) page.close();
   }
 });
+setInterval(() => cache.prune(), 1000 * 60); // Prune every minute
 
 const blocked = require('./blocked.json');
 const blockedRegExp = new RegExp('(' + blocked.join('|') + ')', 'i');
