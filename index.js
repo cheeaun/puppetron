@@ -201,14 +201,36 @@ require('http').createServer(async (req, res) => {
         const height = parseInt(searchParams.get('height'), 10) || 768;
         const thumbWidth = parseInt(searchParams.get('thumbWidth'), 10) || null;
         const fullPage = searchParams.get('fullPage') == 'true' || false;
+        const clipSelector = searchParams.get('clipSelector');
 
         await page.setViewport({
           width,
           height,
         });
+
+        let clip;
+        if (clipSelector){
+          // SOON: https://github.com/GoogleChrome/puppeteer/pull/445
+          const handle = await page.$(clipSelector);
+          if (handle){
+            clip = await handle.evaluate((el) => {
+              const { x, y, width, height, bottom } = el.getBoundingClientRect();
+              return Promise.resolve({x, y, width, height});
+            });
+            const bottom = clip.y + clip.height;
+            if (page.viewport().height < bottom){
+              await page.setViewport({
+                width,
+                height: bottom,
+              });
+            }
+          }
+        }
+
         const screenshot = await pTimeout(page.screenshot({
           type: 'jpeg',
           fullPage,
+          clip,
         }), 20 * 1000, 'Screenshot timed out');
 
         res.writeHead(200, {
