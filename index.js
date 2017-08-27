@@ -7,7 +7,7 @@ const sharp = require('sharp');
 const pTimeout = require('p-timeout');
 const LRU = require('lru-cache');
 const cache = LRU({
-  max: process.env.CACHE_SIZE || 3, // max 3 tabs
+  max: process.env.CACHE_SIZE || Infinity,
   maxAge: 1000 * 60, // 1 minute
   dispose: (url, page) => {
     console.log('🗑 Disposing ' + url);
@@ -48,13 +48,13 @@ require('http').createServer(async (req, res) => {
     return;
   }
 
-  let pageURL;
+  let page;
   try {
     const u = new URL(url);
-    pageURL = u.origin + decodeURIComponent(u.pathname);
+    const pageURL = u.origin + decodeURIComponent(u.pathname);
     const { searchParams } = u;
     
-    let page = cache.get(pageURL);
+    page = cache.get(pageURL);
     if (!page) {
       if (!browser) {
         console.log('🚀 Launch browser!');
@@ -100,8 +100,6 @@ require('http').createServer(async (req, res) => {
       await page.goto(pageURL, {
         waitUntil: 'networkidle',
       });
-
-      cache.set(pageURL, page);
     }
 
     console.log('💥 Perform action: ' + action);
@@ -181,8 +179,10 @@ require('http').createServer(async (req, res) => {
         }
       }
     }
+
+    cache.set(pageURL, page);
   } catch (e) {
-    cache.del(pageURL);
+    page.close();
     console.error(e);
     const { message = '' } = e;
     res.writeHead(400, {
