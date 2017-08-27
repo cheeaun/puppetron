@@ -72,6 +72,13 @@ require('http').createServer(async (req, res) => {
       await page.setRequestInterceptionEnabled(true);
       page.on('request', (request) => {
         const { url } = request;
+
+        // Skip data URIs
+        if (/^data:/i.test(url)){
+          request.continue();
+          return;
+        }
+
         const seconds = (+new Date() - nowTime) / 1000;
         const shortURL = truncate(url, 70);
         // Abort requests that exceeds 15 seconds
