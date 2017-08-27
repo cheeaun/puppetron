@@ -45,6 +45,7 @@ Notes:
 - `link[rel=import]` tags will be removed
 - HTML comments will be removed
 - `base` tag will be added for loading relative resources
+- Elements with absolute paths like `src="/xxx"` or `href="/xxx"` will be prepended with the origin URL.
 
 Parameters: *None*
 
