@@ -39,6 +39,20 @@ require('http').createServer(async (req, res) => {
     return;
   }
 
+  if (req.url == '/status'){
+    res.writeHead(200, {
+      'content-type': 'application/json',
+    });
+    res.end(JSON.stringify({
+      pages: cache.keys(),
+      process: {
+        versions: process.versions,
+        memoryUsage: process.memoryUsage(),
+      },
+    }, null, '\t'));
+    return;
+  }
+
   const [_, action, url] = req.url.match(/^\/(screenshot|render|pdf)?\/?(.*)/i) || ['', '', ''];
 
   if (!url){
