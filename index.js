@@ -190,7 +190,7 @@ require('http').createServer(async (req, res) => {
     });
     res.end('Oops. Something is wrong.\n\n' + message);
 
-    // Handle websocket no opened error
+    // Handle websocket not opened error
     if (/not opened/i.test(message) && browser){
       browser.close();
       browser = null;
