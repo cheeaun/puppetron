@@ -78,7 +78,7 @@ require('http').createServer(async (req, res) => {
     pageURL = u.origin + decodeURIComponent(u.pathname);
     const { searchParams } = u;
     let actionDone = false;
-    
+
     page = cache.get(pageURL);
     if (!page) {
       if (!browser) {
@@ -196,7 +196,7 @@ require('http').createServer(async (req, res) => {
         const height = parseInt(searchParams.get('height'), 10) || 768;
         const thumbWidth = parseInt(searchParams.get('thumbWidth'), 10) || null;
         const fullPage = searchParams.get('fullPage') == 'true' || false;
-        
+
         await page.setViewport({
           width,
           height,
@@ -204,8 +204,8 @@ require('http').createServer(async (req, res) => {
         const screenshot = await pTimeout(page.screenshot({
           type: 'jpeg',
           fullPage,
-        }), 10 * 1000, 'Screenshot timed out');
-    
+        }), 20 * 1000, 'Screenshot timed out');
+
         res.writeHead(200, {
           'content-type': 'image/jpeg',
           'cache-control': 'public,max-age=31536000',
