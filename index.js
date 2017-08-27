@@ -86,10 +86,15 @@ require('http').createServer(async (req, res) => {
         browser = await puppeteer.launch(DEBUG ? {
           headless: false,
           ignoreHTTPSErrors: true,
-          args: ['--no-sandbox', '--auto-open-devtools-for-tabs'],
+          args: [
+            '--no-sandbox',
+            '--auto-open-devtools-for-tabs'
+          ],
         } : {
           ignoreHTTPSErrors: true,
-          args: ['--no-sandbox'],
+          args: [
+            '--no-sandbox'
+          ],
         });
       }
       page = await browser.newPage();
