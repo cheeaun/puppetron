@@ -76,6 +76,7 @@ require('http').createServer(async (req, res) => {
     const u = new URL(url);
     const pageURL = u.origin + decodeURIComponent(u.pathname);
     const { searchParams } = u;
+    let actionDone = false;
     
     page = cache.get(pageURL);
     if (!page) {
@@ -220,6 +221,8 @@ require('http').createServer(async (req, res) => {
       }
     }
 
+    actionDone = true;
+    console.log('💥 Done action: ' + action);
     cache.set(pageURL, page);
 
     // Try to stop all execution
