@@ -2,6 +2,15 @@
 
 > [Puppeteer](https://github.com/GoogleChrome/puppeteer) (Headless Chrome Node API)-based rendering solution.
 
+🚧🚧🚧 PLEASE READ THIS 🚧🚧🚧
+---
+
+**Do NOT use this for production use-cases.**
+
+This is just a demo site of what cool things that `Puppeteer` can do. Under any circumstances, this site may be down any time or be heavily rate-limited to prevent abuse.
+
+Please check out what [Puppeteer](https://github.com/GoogleChrome/puppeteer) can do for your own use case and host on your own servers.
+
 API
 ---
 
