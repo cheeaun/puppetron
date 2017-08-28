@@ -26,6 +26,8 @@ const truncate = (str, len) => str.length > len ? str.slice(0, len) + '…' : st
 let browser;
 
 require('http').createServer(async (req, res) => {
+  const { host } = req.headers;
+
   if (req.url == '/'){
     res.writeHead(200, {
       'content-type': 'text/html; charset=utf-8',
@@ -126,6 +128,14 @@ require('http').createServer(async (req, res) => {
           console.log(`✅ ${method} ${shortURL}`);
           request.continue();
           reqCount++;
+        }
+      });
+
+      page.on('response', ({ headers }) => {
+        const location = headers.get('location') || headers.get('Location');
+        if (location && location.includes(host)){
+          page.close();
+          throw new Error('Possible infinite redirects detected.');
         }
       });
 
