@@ -91,12 +91,14 @@ require('http').createServer(async (req, res) => {
           ignoreHTTPSErrors: true,
           args: [
             '--no-sandbox',
+            '--disable-setuid-sandbox',
             '--auto-open-devtools-for-tabs'
           ],
         } : {
           ignoreHTTPSErrors: true,
           args: [
-            '--no-sandbox'
+            '--no-sandbox',
+            '--disable-setuid-sandbox'
           ],
         });
       }
