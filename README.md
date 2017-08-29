@@ -88,4 +88,4 @@ Credits
 
 Block list from [Prerender](https://github.com/prerender/prerender/blob/master/lib/resources/blocked-resources.json).
 
-This uses [`zenato/puppeteer`](https://hub.docker.com/r/zenato/puppeteer/) Docker image. Inspired by [`puppeteer-renderer`](https://github.com/zenato/puppeteer-renderer).
+This uses [`cheeaun/puppeteer`](https://hub.docker.com/r/cheeaun/puppeteer/) Docker image. Inspired by [`zenato/puppeteer`]((https://hub.docker.com/r/zenato/puppeteer/)), [`puppeteer-renderer`](https://github.com/zenato/puppeteer-renderer) and [Rendertron](https://render-tron.appspot.com/).
