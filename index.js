@@ -86,21 +86,22 @@ require('http').createServer(async (req, res) => {
     if (!page) {
       if (!browser) {
         console.log('🚀 Launch browser!');
-        browser = await puppeteer.launch(DEBUG ? {
-          headless: false,
+        const config = {
           ignoreHTTPSErrors: true,
-          args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--auto-open-devtools-for-tabs'
-          ],
-        } : {
-          ignoreHTTPSErrors: true,
+          dumpio: true,
           args: [
             '--no-sandbox',
             '--disable-setuid-sandbox'
           ],
-        });
+        };
+        if (DEBUG) {
+          config.headless = false;
+          config.args.push('--auto-open-devtools-for-tabs');
+        }
+        if (process.env.CHROME_BIN) {
+          config.executablePath = process.env.CHROME_BIN;
+        }
+        browser = await puppeteer.launch(config);
       }
       page = await browser.newPage();
 
