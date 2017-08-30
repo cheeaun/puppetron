@@ -86,21 +86,26 @@ require('http').createServer(async (req, res) => {
       throw new Error('Invalid URL');
     }
 
-    const u = new URL(url);
+    const { origin, hostname, pathname, searchParams } = new URL(url);
+    const path = decodeURIComponent(pathname);
 
     await new Promise((resolve, reject) => {
       const req = http.request({
         method: 'HEAD',
-        host: u.hostname,
-      }, ({ headers }) => {
-        headers ? resolve() : reject();
+        host: hostname,
+        path,
+      }, ({ statusCode, headers }) => {
+        if (!headers || (statusCode == 200 && !/text\/html/i.test(headers['content-type']))){
+          reject(new Error('Not a HTML page'));
+        } else {
+          resolve();
+        }
       });
       req.on('error', reject);
       req.end();
     });
 
-    pageURL = u.origin + decodeURIComponent(u.pathname);
-    const { searchParams } = u;
+    pageURL = origin + path;
     let actionDone = false;
 
     page = cache.get(pageURL);
