@@ -82,7 +82,23 @@ require('http').createServer(async (req, res) => {
 
   let page, pageURL;
   try {
+    if (!/^https?:\/\//i.test(url)) {
+      throw new Error('Invalid URL');
+    }
+
     const u = new URL(url);
+
+    await new Promise((resolve, reject) => {
+      const req = http.request({
+        method: 'HEAD',
+        host: u.hostname,
+      }, ({ headers }) => {
+        headers ? resolve() : reject();
+      });
+      req.on('error', reject);
+      req.end();
+    });
+
     pageURL = u.origin + decodeURIComponent(u.pathname);
     const { searchParams } = u;
     let actionDone = false;
