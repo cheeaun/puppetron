@@ -304,12 +304,12 @@ require('http').createServer(async (req, res) => {
     }
   } catch (e) {
     if (!DEBUG && page) {
+      console.error(e);
       console.log('💔 Force close ' + pageURL);
       page.removeAllListeners();
       page.close();
     }
     cache.del(pageURL);
-    console.error(e);
     const { message = '' } = e;
     res.writeHead(400, {
       'content-type': 'text/plain',
