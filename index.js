@@ -11,12 +11,14 @@ const cache = LRU({
   max: process.env.CACHE_SIZE || Infinity,
   maxAge: 1000 * 60, // 1 minute
   noDisposeOnSet: true,
-  dispose: (url, page) => {
-    console.log('🗑 Disposing ' + url);
-    if (page && page.close){
-      page.removeAllListeners();
-      page.close();
-    }
+  dispose: async (url, page) => {
+    try {
+      if (page && page.close){
+        console.log('🗑 Disposing ' + url);
+        page.removeAllListeners();
+        await page.close();
+      }
+    } catch (e){}
   }
 });
 setInterval(() => cache.prune(), 1000 * 60); // Prune every minute
