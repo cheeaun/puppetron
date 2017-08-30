@@ -1,7 +1,7 @@
 const fs = require('fs');
 const http = require('http');
 const { URL } = require('url');
-const { DEBUG } = process.env;
+const { DEBUG, HEADFUL, CHROME_BIN, PORT } = process.env;
 
 const puppeteer = require('puppeteer');
 const sharp = require('sharp');
@@ -109,19 +109,17 @@ require('http').createServer(async (req, res) => {
         console.log('🚀 Launch browser!');
         const config = {
           ignoreHTTPSErrors: true,
-          dumpio: true,
           args: [
             '--no-sandbox',
             '--disable-setuid-sandbox'
           ],
         };
-        if (DEBUG) {
+        if (DEBUG) config.dumpio = true;
+        if (HEADFUL) {
           config.headless = false;
           config.args.push('--auto-open-devtools-for-tabs');
         }
-        if (process.env.CHROME_BIN) {
-          config.executablePath = process.env.CHROME_BIN;
-        }
+        if (CHROME_BIN) config.executablePath = CHROME_BIN;
         browser = await puppeteer.launch(config);
       }
       page = await browser.newPage();
@@ -339,7 +337,7 @@ require('http').createServer(async (req, res) => {
       browser = null;
     }
   }
-}).listen(process.env.PORT || 3000);
+}).listen(PORT || 3000);
 
 process.on('SIGINT', () => {
   if (browser) browser.close();
