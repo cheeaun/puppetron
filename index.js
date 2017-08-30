@@ -13,7 +13,10 @@ const cache = LRU({
   noDisposeOnSet: true,
   dispose: (url, page) => {
     console.log('🗑 Disposing ' + url);
-    if (page && page.close) page.close();
+    if (page && page.close){
+      page.removeAllListeners();
+      page.close();
+    }
   }
 });
 setInterval(() => cache.prune(), 1000 * 60); // Prune every minute
@@ -134,18 +137,24 @@ require('http').createServer(async (req, res) => {
         }
       });
 
+      let responseReject;
+      const responsePromise = new Promise((_, reject) => {
+        responseReject = reject;
+      });
       page.on('response', ({ headers }) => {
         const location = headers.get('location') || headers.get('Location');
         if (location && location.includes(host)){
-          page.close();
-          throw new Error('Possible infinite redirects detected.');
+          responseReject(new Error('Possible infinite redirects detected.'));
         }
       });
 
       console.log('⬇️ Fetching ' + pageURL);
-      await page.goto(pageURL, {
-        waitUntil: 'networkidle',
-      });
+      await Promise.race([
+        responsePromise,
+        page.goto(pageURL, {
+          waitUntil: 'networkidle',
+        })
+      ]);
     }
 
     console.log('💥 Perform action: ' + action);
@@ -292,7 +301,11 @@ require('http').createServer(async (req, res) => {
       });
     }
   } catch (e) {
-    if (!DEBUG && page) page.close();
+    if (!DEBUG && page) {
+      console.log('💔 Force close ' + pageURL);
+      page.removeAllListeners();
+      page.close();
+    }
     cache.del(pageURL);
     console.error(e);
     const { message = '' } = e;
