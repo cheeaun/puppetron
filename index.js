@@ -170,6 +170,13 @@ require('http').createServer(async (req, res) => {
         }
       });
 
+      const width = parseInt(searchParams.get('width'), 10) || 1024;
+      const height = parseInt(searchParams.get('height'), 10) || 768;
+      await page.setViewport({
+        width,
+        height,
+      });
+
       console.log('⬇️ Fetching ' + pageURL);
       await Promise.race([
         responsePromise,
@@ -246,16 +253,9 @@ require('http').createServer(async (req, res) => {
         break;
       }
       default: {
-        const width = parseInt(searchParams.get('width'), 10) || 1024;
-        const height = parseInt(searchParams.get('height'), 10) || 768;
         const thumbWidth = parseInt(searchParams.get('thumbWidth'), 10) || null;
         const fullPage = searchParams.get('fullPage') == 'true' || false;
         const clipSelector = searchParams.get('clipSelector');
-
-        await page.setViewport({
-          width,
-          height,
-        });
 
         let clip;
         if (clipSelector){

@@ -27,6 +27,11 @@ The API can perform 3 actions:
 
 **`URL`** - the URL with encoded `pathname`, `search` and `hash`.
 
+Global parameters:
+
+- `width` - width of viewport/screenshot (default: `1024`)
+- `height` - height of viewport/screenshot (default: `768`)
+
 ### Screenshot
 
 ```
@@ -37,8 +42,6 @@ The API can perform 3 actions:
 
 Parameters:
 
-- `width` - width of screenshot (default: `1024`)
-- `height` - height of screenshot (default: `768`)
 - `thumbWidth` - width of thumbnail, respecting aspect ratio (no default, has to be smaller than `width`)
 - `fullPage` - takes a screenshot of the full scrollable page (default: `false`). If the page is too long, it may time out.
 - `clipSelector` - CSS selector of element to be clipped (no default). E.g.: `.weather-forecast`.
