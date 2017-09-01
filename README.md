@@ -2,6 +2,11 @@
 
 > [Puppeteer](https://github.com/GoogleChrome/puppeteer) (Headless Chrome Node API)-based rendering solution.
 
+Video demos:
+
+- <https://www.youtube.com/watch?v=n4sRp3qe_1Y>
+- <https://www.youtube.com/watch?v=wYCrJu-Wy2E>
+
 🚧🚧🚧 PLEASE READ THIS 🚧🚧🚧
 ---
 
@@ -14,15 +19,19 @@ Please check out what [Puppeteer](https://github.com/GoogleChrome/puppeteer) can
 API
 ---
 
+The API can perform 3 actions:
+
+- [Screenshot](#screenshot) - take a screenshot of the web page
+- [Render](#render) - render and serialize a HTML copy of the web page
+- [PDF](#pdf) - generate a PDF of the web page
+
 **`URL`** - the URL with encoded `pathname`, `search` and `hash`.
 
 ### Screenshot
 
 ```
 /screenshot/{URL}
-
 ...or
-
 /{URL}
 ```
 
