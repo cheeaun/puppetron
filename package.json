@@ -9,7 +9,15 @@
   "now": {
     "name": "puppetron",
     "type": "docker",
-    "alias": "puppetron.now.sh"
+    "alias": "puppetron.now.sh",
+    "files": [
+      "blocked.json",
+      "Dockerfile",
+      "index.html",
+      "index.js",
+      "package.json",
+      "yarn.lock"
+    ]
   },
   "dependencies": {
     "lru-cache": "~4.1.1",
