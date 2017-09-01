@@ -190,44 +190,51 @@ require('http').createServer(async (req, res) => {
 
     switch (action){
       case 'render': {
-        if (!cache.has(pageURL)){
-          await page.evaluate(() => {
-            // Remove scripts except JSON-LD
-            const scripts = document.querySelectorAll('script:not([type="application/ld+json"])');
-            scripts.forEach(s => s.parentNode.removeChild(s));
+        const raw = searchParams.get('raw') || false;
 
-            // Remove import tags
-            const imports = document.querySelectorAll('link[rel=import]');
-            imports.forEach(i => i.parentNode.removeChild(i));
+        const content = await pTimeout(raw ? page.content() : page.evaluate(() => {
+          let content = '';
+          if (document.doctype) {
+            content = new XMLSerializer().serializeToString(document.doctype);
+          }
 
-            const { origin, pathname } = location;
-            // Inject <base> for loading relative resources
-            if (!document.querySelector('base')){
-              const base = document.createElement('base');
-              base.href = origin + pathname;
-              document.head.appendChild(base);
+          const doc = document.documentElement.cloneNode(true);
+
+          // Remove scripts except JSON-LD
+          const scripts = doc.querySelectorAll('script:not([type="application/ld+json"])');
+          scripts.forEach(s => s.parentNode.removeChild(s));
+
+          // Remove import tags
+          const imports = doc.querySelectorAll('link[rel=import]');
+          imports.forEach(i => i.parentNode.removeChild(i));
+
+          const { origin, pathname } = location;
+          // Inject <base> for loading relative resources
+          if (!doc.querySelector('base')){
+            const base = document.createElement('base');
+            base.href = origin + pathname;
+            doc.querySelector('head').appendChild(base);
+          }
+
+          // Try to fix absolute paths
+          const absEls = doc.querySelectorAll('link[href^="/"], script[src^="/"], img[src^="/"]');
+          absEls.forEach(el => {
+            const href = el.getAttribute('href');
+            const src = el.getAttribute('src');
+            if (src && /^\/[^/]/i.test(src)){
+              el.src = origin + src;
+            } else if (href && /^\/[^/]/i.test(href)){
+              el.href = origin + href;
             }
-
-            // Try to fix absolute paths
-            const absEls = document.querySelectorAll('link[href^="/"], script[src^="/"], img[src^="/"]');
-            absEls.forEach(el => {
-              const href = el.getAttribute('href');
-              const src = el.getAttribute('src');
-              if (src && /^\/[^/]/i.test(src)){
-                el.src = origin + src;
-              } else if (href && /^\/[^/]/i.test(href)){
-                el.href = origin + href;
-              }
-            });
           });
-        }
 
-        let content = await pTimeout(page.content(), 10 * 1000, 'Render timed out');
+          content += doc.outerHTML;
 
-        if (!cache.has(pageURL)){
           // Remove comments
           content = content.replace(/<!--[\s\S]*?-->/g, '');
-        }
+
+          return content;
+        }), 10 * 1000, 'Render timed out');
 
         res.writeHead(200, {
           'content-type': 'text/html; charset=UTF-8',
