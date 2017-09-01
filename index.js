@@ -184,6 +184,17 @@ require('http').createServer(async (req, res) => {
           waitUntil: 'networkidle',
         })
       ]);
+
+      // Pause all media and stop buffering
+      page.frames().forEach((frame) => {
+        frame.evaluate(() => {
+          document.querySelectorAll('video, audio').forEach(m => {
+            if (!m) return;
+            if (m.pause) m.pause();
+            m.preload = 'none';
+          });
+        });
+      });
     }
 
     console.log('💥 Perform action: ' + action);
@@ -320,12 +331,6 @@ require('http').createServer(async (req, res) => {
           XMLHttpRequest.prototype.send = _=>_;
           // Disable all RAFs
           requestAnimationFrame = _=>_;
-          // Pause all media and stop buffering
-          document.querySelectorAll('video, audio').forEach(m => {
-            if (!m) return;
-            if (m.pause) m.pause();
-            m.preload = 'none';
-          });
         });
       });
     }
