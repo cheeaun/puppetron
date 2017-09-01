@@ -134,7 +134,7 @@ require('http').createServer(async (req, res) => {
       let reqCount = 0;
       await page.setRequestInterceptionEnabled(true);
       page.on('request', (request) => {
-        const { url, method } = request;
+        const { url, method, resourceType } = request;
 
         // Skip data URIs
         if (/^data:/i.test(url)){
@@ -144,12 +144,13 @@ require('http').createServer(async (req, res) => {
 
         const seconds = (+new Date() - nowTime) / 1000;
         const shortURL = truncate(url, 70);
+        const otherResources = /^(manifest|other)$/i.test(resourceType);
         // Abort requests that exceeds 15 seconds
         // Also abort if more than 100 requests
         if (seconds > 15 || reqCount > 100 || actionDone){
           console.log(`❌⏳ ${method} ${shortURL}`);
           request.abort();
-        } else if (blockedRegExp.test(url)){
+        } else if (blockedRegExp.test(url) || otherResources){
           console.log(`❌ ${method} ${shortURL}`);
           request.abort();
         } else {
