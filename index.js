@@ -108,6 +108,7 @@ require('http').createServer(async (req, res) => {
 
     pageURL = origin + path;
     let actionDone = false;
+    let width;
 
     page = cache.get(pageURL);
     if (!page) {
@@ -171,7 +172,7 @@ require('http').createServer(async (req, res) => {
         }
       });
 
-      const width = parseInt(searchParams.get('width'), 10) || 1024;
+      width = parseInt(searchParams.get('width'), 10) || 1024;
       const height = parseInt(searchParams.get('height'), 10) || 768;
       await page.setViewport({
         width,
