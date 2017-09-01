@@ -1,4 +1,4 @@
-FROM cheeaun/puppeteer
+FROM cheeaun/puppeteer:1.1.1
 RUN apt-get update && apt-get install -yq make g++
 COPY . /app
 RUN cd /app && yarn --production --pure-lockfile && \
