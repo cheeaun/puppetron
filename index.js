@@ -16,6 +16,7 @@ const cache = LRU({
       if (page && page.close){
         console.log('🗑 Disposing ' + url);
         page.removeAllListeners();
+        await page.deleteCookie(await page.cookies());
         await page.close();
       }
     } catch (e){}
