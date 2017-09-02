@@ -356,8 +356,13 @@ require('http').createServer(async (req, res) => {
     // Handle websocket not opened error
     if (/not opened/i.test(message) && browser){
       console.error('🕸 Web socket failed');
-      browser.close();
-      browser = null;
+      try {
+        browser.close();
+        browser = null;
+      } catch (err) {
+        console.warn(`Chrome not be killed ${err.message}`);
+        browser = null;
+      }
     }
   }
 }).listen(PORT || 3000);
