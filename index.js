@@ -167,7 +167,7 @@ require('http').createServer(async (req, res) => {
         responseReject = reject;
       });
       page.on('response', ({ headers }) => {
-        const location = headers.get('location') || headers.get('Location');
+        const location = headers['location'];
         if (location && location.includes(host)){
           responseReject(new Error('Possible infinite redirects detected.'));
         }
