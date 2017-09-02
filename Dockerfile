@@ -1,8 +1,6 @@
 FROM cheeaun/puppeteer:1.1.1
-RUN apt-get update && apt-get install -yq make g++
 COPY . /app
-RUN cd /app && yarn --production --pure-lockfile && \
-  apt-get purge -y --auto-remove make g++
+RUN cd /app && yarn --production --pure-lockfile
 EXPOSE 3000
 WORKDIR /app
 CMD yarn start
