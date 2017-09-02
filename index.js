@@ -360,7 +360,7 @@ require('http').createServer(async (req, res) => {
         browser.close();
         browser = null;
       } catch (err) {
-        console.warn(`Chrome not be killed ${err.message}`);
+        console.warn(`Chrome could not be killed ${err.message}`);
         browser = null;
       }
     }
