@@ -2,10 +2,12 @@
 
 > [Puppeteer](https://github.com/GoogleChrome/puppeteer) (Headless Chrome Node API)-based rendering solution.
 
-Video demos:
+Videos & Tweets:
 
-- <https://www.youtube.com/watch?v=n4sRp3qe_1Y>
-- <https://www.youtube.com/watch?v=wYCrJu-Wy2E>
+- Demo <https://www.youtube.com/watch?v=n4sRp3qe_1Y>
+- `clipSelector` demo <https://www.youtube.com/watch?v=wYCrJu-Wy2E>
+- CJK fonts support <https://twitter.com/cheeaun/status/902340897433501696>
+- Emoji support <https://twitter.com/cheeaun/status/903492052452728832>
 
 🚧🚧🚧 PLEASE READ THIS 🚧🚧🚧
 ---
