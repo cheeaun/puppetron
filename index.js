@@ -110,6 +110,7 @@ require('http').createServer(async (req, res) => {
     let actionDone = false;
     const width = parseInt(searchParams.get('width'), 10) || 1024;
     const height = parseInt(searchParams.get('height'), 10) || 768;
+    const deviceScaleFactor = parseInt(searchParams.get('deviceScaleFactor'), 10) || 1;
 
     page = cache.get(pageURL);
     if (!page) {
@@ -198,8 +199,9 @@ require('http').createServer(async (req, res) => {
       });
     } else {
       await page.setViewport({
-        width,
-        height,
+        width: width,
+        height: height,
+        deviceScaleFactor: deviceScaleFactor,
       });
     }
 
