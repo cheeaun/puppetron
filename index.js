@@ -4,7 +4,6 @@ const { URL } = require('url');
 const { DEBUG, HEADFUL, CHROME_BIN, PORT } = process.env;
 
 const puppeteer = require('puppeteer');
-const jimp = require('jimp');
 const pTimeout = require('p-timeout');
 const LRU = require('lru-cache');
 const cache = LRU({
