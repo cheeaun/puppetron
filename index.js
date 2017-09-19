@@ -303,24 +303,17 @@ require('http').createServer(async (req, res) => {
         }
 
         const screenshot = await pTimeout(page.screenshot({
-          type: 'jpeg',
+          type: 'png',
           fullPage,
           clip,
         }), 20 * 1000, 'Screenshot timed out');
 
         res.writeHead(200, {
-          'content-type': 'image/jpeg',
+          'content-type': 'image/png',
           'cache-control': 'public,max-age=31536000',
         });
 
-        if (thumbWidth && thumbWidth < width){
-          const image = await jimp.read(screenshot);
-          image.resize(thumbWidth, jimp.AUTO).quality(90).getBuffer(jimp.MIME_JPEG, (err, buffer) => {
-            res.end(buffer, 'binary');
-          });
-        } else {
-          res.end(screenshot, 'binary');
-        }
+        res.end(screenshot, 'binary');
       }
     }
 
