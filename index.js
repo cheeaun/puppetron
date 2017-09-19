@@ -4,7 +4,6 @@ const { URL } = require('url');
 const { DEBUG, HEADFUL, CHROME_BIN, PORT } = process.env;
 
 const puppeteer = require('puppeteer');
-const jimp = require('jimp');
 const pTimeout = require('p-timeout');
 const LRU = require('lru-cache');
 const cache = LRU({
@@ -110,6 +109,7 @@ require('http').createServer(async (req, res) => {
     let actionDone = false;
     const width = parseInt(searchParams.get('width'), 10) || 1024;
     const height = parseInt(searchParams.get('height'), 10) || 768;
+    const deviceScaleFactor = parseInt(searchParams.get('deviceScaleFactor'), 10) || 1;
 
     page = cache.get(pageURL);
     if (!page) {
@@ -198,8 +198,9 @@ require('http').createServer(async (req, res) => {
       });
     } else {
       await page.setViewport({
-        width,
-        height,
+        width: width,
+        height: height,
+        deviceScaleFactor: deviceScaleFactor,
       });
     }
 
@@ -301,24 +302,17 @@ require('http').createServer(async (req, res) => {
         }
 
         const screenshot = await pTimeout(page.screenshot({
-          type: 'jpeg',
+          type: 'png',
           fullPage,
           clip,
         }), 20 * 1000, 'Screenshot timed out');
 
         res.writeHead(200, {
-          'content-type': 'image/jpeg',
+          'content-type': 'image/png',
           'cache-control': 'public,max-age=31536000',
         });
 
-        if (thumbWidth && thumbWidth < width){
-          const image = await jimp.read(screenshot);
-          image.resize(thumbWidth, jimp.AUTO).quality(90).getBuffer(jimp.MIME_JPEG, (err, buffer) => {
-            res.end(buffer, 'binary');
-          });
-        } else {
-          res.end(screenshot, 'binary');
-        }
+        res.end(screenshot, 'binary');
       }
     }
 

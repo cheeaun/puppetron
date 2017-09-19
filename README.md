@@ -33,6 +33,7 @@ Global parameters:
 
 - `width` - width of viewport/screenshot (default: `1024`)
 - `height` - height of viewport/screenshot (default: `768`)
+- `deviceScaleFactor` - scale factor of viewport/screenshot (default: `1`)
 
 ### Screenshot
 
