@@ -286,10 +286,10 @@ require('http').createServer(async (req, res) => {
           // SOON: https://github.com/GoogleChrome/puppeteer/pull/445
           const handle = await page.$(clipSelector);
           if (handle){
-            clip = await handle.evaluate((el) => {
+            clip = await page.evaluate((el) => {
               const { x, y, width, height, bottom } = el.getBoundingClientRect();
               return Promise.resolve({x, y, width, height});
-            });
+            }, handle);
             const bottom = clip.y + clip.height;
             if (page.viewport().height < bottom){
               await page.setViewport({
