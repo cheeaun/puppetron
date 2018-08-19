@@ -134,9 +134,11 @@ require('http').createServer(async (req, res) => {
 
       const nowTime = +new Date();
       let reqCount = 0;
-      await page.setRequestInterceptionEnabled(true);
+      await page.setRequestInterception(true);
       page.on('request', (request) => {
-        const { url, method, resourceType } = request;
+        const url = request.url();
+        const method = request.method();
+        const resourceType = request.resourceType();
 
         // Skip data URIs
         if (/^data:/i.test(url)){
@@ -182,7 +184,7 @@ require('http').createServer(async (req, res) => {
       await Promise.race([
         responsePromise,
         page.goto(pageURL, {
-          waitUntil: 'networkidle',
+          waitUntil: 'networkidle2',
         })
       ]);
 
@@ -281,30 +283,20 @@ require('http').createServer(async (req, res) => {
         const fullPage = searchParams.get('fullPage') == 'true' || false;
         const clipSelector = searchParams.get('clipSelector');
 
-        let clip;
+        let screenshot;
         if (clipSelector){
-          // SOON: https://github.com/GoogleChrome/puppeteer/pull/445
           const handle = await page.$(clipSelector);
           if (handle){
-            clip = await page.evaluate((el) => {
-              const { x, y, width, height, bottom } = el.getBoundingClientRect();
-              return Promise.resolve({x, y, width, height});
-            }, handle);
-            const bottom = clip.y + clip.height;
-            if (page.viewport().height < bottom){
-              await page.setViewport({
-                width,
-                height: bottom,
-              });
-            }
+            screenshot = await pTimeout(handle.screenshot({
+              type: 'jpeg',
+            }), 20 * 1000, 'Screenshot timed out');
           }
+        } else {
+          screenshot = await pTimeout(page.screenshot({
+            type: 'jpeg',
+            fullPage,
+          }), 20 * 1000, 'Screenshot timed out');
         }
-
-        const screenshot = await pTimeout(page.screenshot({
-          type: 'jpeg',
-          fullPage,
-          clip,
-        }), 20 * 1000, 'Screenshot timed out');
 
         res.writeHead(200, {
           'content-type': 'image/jpeg',
