@@ -119,8 +119,12 @@ require('http').createServer(async (req, res) => {
           ignoreHTTPSErrors: true,
           args: [
             '--no-sandbox',
-            '--disable-setuid-sandbox'
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--enable-features=NetworkService',
+            '-—disable-dev-tools',
           ],
+          devtools: false,
         };
         if (DEBUG) config.dumpio = true;
         if (HEADFUL) {

@@ -9,6 +9,8 @@ Videos & Tweets:
 - CJK fonts support <https://twitter.com/cheeaun/status/902340897433501696>
 - Emoji support <https://twitter.com/cheeaun/status/903492052452728832>
 
+**⚠️⚠️⚠️ NOTE:** Starting version 2.0, CJK and emoji support is gone.
+
 🚧🚧🚧 PLEASE READ THIS 🚧🚧🚧
 ---
 
@@ -102,4 +104,8 @@ Credits
 
 Block list from [Prerender](https://github.com/prerender/prerender/blob/master/lib/resources/blocked-resources.json).
 
-This uses [`cheeaun/puppeteer`](https://hub.docker.com/r/cheeaun/puppeteer/) Docker image. Inspired by [`zenato/puppeteer`]((https://hub.docker.com/r/zenato/puppeteer/)), [`puppeteer-renderer`](https://github.com/zenato/puppeteer-renderer) and [Rendertron](https://render-tron.appspot.com/).
+For version 1.0, this uses [`cheeaun/puppeteer`](https://hub.docker.com/r/cheeaun/puppeteer/) Docker image.
+
+For version 2.0, this uses some parts from [Zeit's now-examples: misc-screenshot](https://github.com/zeit/now-examples/blob/master/misc-screenshot/Dockerfile).
+
+Inspired by [`zenato/puppeteer`]((https://hub.docker.com/r/zenato/puppeteer/)), [`puppeteer-renderer`](https://github.com/zenato/puppeteer-renderer) and [Rendertron](https://render-tron.appspot.com/).
