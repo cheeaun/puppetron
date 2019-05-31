@@ -1,0 +1,14 @@
+{
+  "name": "puppetron",
+  "version": 2,
+  "alias": "puppetron.now.sh",
+  "builds": [
+    { "src": "index.html", "use": "@now/static" },
+    { "src": "index.js", "use": "@now/node", "config": { "maxLambdaSize": "40mb" } }
+  ],
+  "routes": [
+    { "src": "/favicon.ico", "status": 204 },
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/(.+)", "dest": "/index.js" }
+  ]
+}

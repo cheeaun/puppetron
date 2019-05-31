@@ -1,12 +1,17 @@
 const fs = require('fs');
 const http = require('http');
 const { URL } = require('url');
-const { DEBUG, HEADFUL, CHROME_BIN, PORT } = process.env;
 
-const puppeteer = require('puppeteer');
+const findChrome = require('chrome-finder');
+const chrome = require('chrome-aws-lambda');
+const puppeteer = require('puppeteer-core');
+
+const isDev = !process.env.NOW_REGION;
+
 const jimp = require('jimp');
 const pTimeout = require('p-timeout');
 const LRU = require('lru-cache');
+
 const cache = LRU({
   max: process.env.CACHE_SIZE || Infinity,
   maxAge: 1000 * 60, // 1 minute
@@ -31,7 +36,7 @@ const truncate = (str, len) => str.length > len ? str.slice(0, len) + '…' : st
 
 let browser;
 
-require('http').createServer(async (req, res) => {
+async function handler(req, res) {
   const { host } = req.headers;
 
   if (req.url == '/'){
@@ -116,22 +121,14 @@ require('http').createServer(async (req, res) => {
       if (!browser) {
         console.log('🚀 Launch browser!');
         const config = {
-          ignoreHTTPSErrors: true,
-          args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--enable-features=NetworkService',
-            '-—disable-dev-tools',
-          ],
-          devtools: false,
+          ...(isDev ? {
+            executablePath: findChrome(),
+          } : {
+            args: chrome.args,
+            executablePath: await chrome.executablePath,
+            headless: chrome.headless,
+          }),
         };
-        if (DEBUG) config.dumpio = true;
-        if (HEADFUL) {
-          config.headless = false;
-          config.args.push('--auto-open-devtools-for-tabs');
-        }
-        if (CHROME_BIN) config.executablePath = CHROME_BIN;
         browser = await puppeteer.launch(config);
       }
       page = await browser.newPage();
@@ -268,7 +265,7 @@ require('http').createServer(async (req, res) => {
       }
       case 'pdf': {
         const format = searchParams.get('format') || null;
-        const pageRanges = searchParams.get('pageRanges') || null;
+        const pageRanges = searchParams.get('pageRanges') || '';
 
         const pdf = await pTimeout(page.pdf({
           format,
@@ -336,7 +333,7 @@ require('http').createServer(async (req, res) => {
       });
     }
   } catch (e) {
-    if (!DEBUG && page) {
+    if (page) {
       console.error(e);
       console.log('💔 Force close ' + pageURL);
       page.removeAllListeners();
@@ -361,7 +358,15 @@ require('http').createServer(async (req, res) => {
       }
     }
   }
-}).listen(PORT || 3000);
+};
+
+module.exports = handler;
+
+if (isDev) {
+  const PORT = process.env.PORT || 3000;
+  const listen = () => console.log(`Listening on ${PORT}...`);
+  require('http').createServer(handler).listen(PORT, listen);
+};
 
 process.on('SIGINT', () => {
   if (browser) browser.close();
