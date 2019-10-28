@@ -124,6 +124,7 @@ async function handler(req, res) {
         console.log('🚀 Launch browser!');
         const config = {
           ...(isDev ? {
+            // executablePath: '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary',
             executablePath: findChrome(),
           } : {
             args: chrome.args,
