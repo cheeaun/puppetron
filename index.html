@@ -87,9 +87,9 @@ function encode(url){
 var action;
 formtron.onsubmit = function(e){
   e.preventDefault();
-  var url = '/' + action + '/' + encode(formtron.url.value);
+  var url = '/' + action + '?url=' + encode(formtron.url.value);
   if (action == 'screenshot'){
-    location.href = url + '?width=' + window.innerWidth + '&height=' + window.innerHeight;
+    location.href = url + '&width=' + window.innerWidth + '&height=' + window.innerHeight;
   } else {
     location.href = url;
   }

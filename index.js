@@ -68,13 +68,13 @@ async function handler(req, res) {
     return;
   }
 
-  const [_, action, url] = req.url.match(/^\/(screenshot|render|pdf)?\/?(.*)/i) || ['', '', ''];
+  const [_, action] = req.url.match(/^\/(screenshot|render|pdf)/i) || ['', '', ''];
 
-  if (!url){
+  if (!action){
     res.writeHead(400, {
       'content-type': 'text/plain',
     });
-    res.end('Something is wrong. Missing URL.');
+    res.end('Something is wrong. Invalid URL.');
     return;
   }
 
@@ -88,11 +88,14 @@ async function handler(req, res) {
 
   let page, pageURL;
   try {
-    if (!/^https?:\/\//i.test(url)) {
+    const { searchParams } = new URL(req.url, 'http://test.com');
+    pageURL = searchParams.get('url');
+
+    if (!/^https?:\/\//i.test(pageURL)) {
       throw new Error('Invalid URL');
     }
 
-    const { origin, hostname, pathname, searchParams } = new URL(url);
+    const { hostname, pathname } = new URL(pageURL);
     const path = decodeURIComponent(pathname);
 
     await new Promise((resolve, reject) => {
@@ -111,7 +114,6 @@ async function handler(req, res) {
       req.end();
     });
 
-    pageURL = origin + path;
     let actionDone = false;
     const width = parseInt(searchParams.get('width'), 10) || 1024;
     const height = parseInt(searchParams.get('height'), 10) || 768;
