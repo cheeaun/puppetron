@@ -12,7 +12,7 @@ const jimp = require('jimp');
 const pTimeout = require('p-timeout');
 const LRU = require('lru-cache');
 
-const cache = LRU({
+const cache = new LRU({
   max: process.env.CACHE_SIZE || Infinity,
   maxAge: 1000 * 60, // 1 minute
   noDisposeOnSet: true,
