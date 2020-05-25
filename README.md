@@ -11,8 +11,7 @@ Videos & Tweets:
 
 **⚠️⚠️⚠️ NOTE:** Starting version 2.0, CJK and emoji support is gone.
 
-🚧🚧🚧 PLEASE READ THIS 🚧🚧🚧
----
+## 🚧🚧🚧 PLEASE READ THIS 🚧🚧🚧
 
 **Do NOT use this for production use-cases.**
 
@@ -20,8 +19,7 @@ This is just a demo site of what cool things that `Puppeteer` can do. Under any 
 
 Please check out what [Puppeteer](https://github.com/GoogleChrome/puppeteer) can do for your own use case and host on your own servers.
 
-API
----
+## API
 
 The API can perform 3 actions:
 
@@ -64,7 +62,7 @@ Notes:
 - `base` tag will be added for loading relative resources
 - Elements with absolute paths like `src="/xxx"` or `href="/xxx"` will be prepended with the origin URL.
 
-Parameters: *None*
+Parameters: _None_
 
 ### PDF
 
@@ -77,30 +75,22 @@ Parameters:
 - `format`: Paper format that [Puppeteer supports](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#pagepdfoptions). E.g.: `Letter`, `Legal`, `A4`, etc. (default: `Letter`)
 - `pageRanges`: Paper ranges to print. E.g., `1-5`, `8`, `11-13` (default all pages)
 
-Development
----
+## Development
 
 ### Requirements
 
 - Node.js
 - Docker
 
-For local Chromium install:
+#### Steps
 
 1. `npm install`
 2. `npm start`
 3. Load `localhost:3000`
 
-For Docker-based install:
-
-1. `docker build . -t puppet`
-2. `docker run -p 8080:3000 puppet`
-3. Load `localhost:8080`
-
 [![Deploy to now](https://deploy.now.sh/static/button.svg)](https://deploy.now.sh/?repo=https://github.com/cheeaun/puppetron)
 
-Credits
----
+## Credits
 
 Block list from [Prerender](https://github.com/prerender/prerender/blob/master/lib/resources/blocked-resources.json).
 
@@ -108,4 +98,4 @@ For version 1.0, this uses [`cheeaun/puppeteer`](https://hub.docker.com/r/cheeau
 
 For version 2.0, this uses some parts from [Zeit's now-examples: misc-screenshot](https://github.com/zeit/now-examples/blob/master/misc-screenshot/Dockerfile).
 
-Inspired by [`zenato/puppeteer`]((https://hub.docker.com/r/zenato/puppeteer/)), [`puppeteer-renderer`](https://github.com/zenato/puppeteer-renderer) and [Rendertron](https://render-tron.appspot.com/).
+Inspired by [`zenato/puppeteer`](<(https://hub.docker.com/r/zenato/puppeteer/)>), [`puppeteer-renderer`](https://github.com/zenato/puppeteer-renderer) and [Rendertron](https://render-tron.appspot.com/).
