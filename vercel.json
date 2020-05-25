@@ -1,0 +1,9 @@
+{
+  "alias": "puppetron.now.sh",
+  "version": 2,
+  "public": true,
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/(.+)", "destination": "/api/index" }
+  ]
+}

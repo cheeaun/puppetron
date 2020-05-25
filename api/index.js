@@ -2,11 +2,10 @@ const fs = require('fs');
 const http = require('http');
 const { URL } = require('url');
 
-const findChrome = require('chrome-finder');
 const chrome = require('chrome-aws-lambda');
 const puppeteer = require('puppeteer-core');
 
-const isDev = !process.env.NOW_REGION;
+const isDev = process.env.NOW_REGION === 'dev1';
 
 const jimp = require('jimp');
 const pTimeout = require('p-timeout');
@@ -18,28 +17,31 @@ const cache = new LRU({
   noDisposeOnSet: true,
   dispose: async (url, page) => {
     try {
-      if (page && page.close){
+      if (page && page.close) {
         console.log('🗑 Disposing ' + url);
         page.removeAllListeners();
         await page.deleteCookie(await page.cookies());
         await page.close();
       }
-    } catch (e){}
-  }
+    } catch (e) {}
+  },
 });
 setInterval(() => cache.prune(), 1000 * 60); // Prune every minute
 
-const blocked = require('./blocked.json');
+const blocked = require('../blocked.json');
 const blockedRegExp = new RegExp('(' + blocked.join('|') + ')', 'i');
 
-const truncate = (str, len) => str.length > len ? str.slice(0, len) + '…' : str;
+const truncate = (str, len) =>
+  str.length > len ? str.slice(0, len) + '…' : str;
 
 let browser;
+const localChrome = isDev ? require('chrome-finder')() : null;
+if (isDev) console.log(localChrome);
 
 async function handler(req, res) {
   const { host } = req.headers;
 
-  if (req.url == '/'){
+  if (req.url == '/') {
     res.writeHead(200, {
       'content-type': 'text/html; charset=utf-8',
       'cache-control': 'public,max-age=31536000',
@@ -48,29 +50,39 @@ async function handler(req, res) {
     return;
   }
 
-  if (req.url == '/favicon.ico'){
+  if (req.url == '/favicon.ico') {
     res.writeHead(204);
     res.end();
     return;
   }
 
-  if (req.url == '/status'){
+  if (req.url == '/status') {
     res.writeHead(200, {
       'content-type': 'application/json',
     });
-    res.end(JSON.stringify({
-      pages: cache.keys(),
-      process: {
-        versions: process.versions,
-        memoryUsage: process.memoryUsage(),
-      },
-    }, null, '\t'));
+    res.end(
+      JSON.stringify(
+        {
+          pages: cache.keys(),
+          process: {
+            versions: process.versions,
+            memoryUsage: process.memoryUsage(),
+          },
+        },
+        null,
+        '\t',
+      ),
+    );
     return;
   }
 
-  const [_, action] = req.url.match(/^\/(screenshot|render|pdf)/i) || ['', '', ''];
+  const [_, action] = req.url.match(/^\/(screenshot|render|pdf)/i) || [
+    '',
+    '',
+    '',
+  ];
 
-  if (!action){
+  if (!action) {
     res.writeHead(400, {
       'content-type': 'text/plain',
     });
@@ -78,11 +90,13 @@ async function handler(req, res) {
     return;
   }
 
-  if (cache.itemCount > 20){
+  if (cache.itemCount > 20) {
     res.writeHead(420, {
       'content-type': 'text/plain',
     });
-    res.end(`There are ${cache.itemCount} pages in the current instance now. Please try again in few minutes.`);
+    res.end(
+      `There are ${cache.itemCount} pages in the current instance now. Please try again in few minutes.`,
+    );
     return;
   }
 
@@ -99,17 +113,23 @@ async function handler(req, res) {
     const path = decodeURIComponent(pathname);
 
     await new Promise((resolve, reject) => {
-      const req = http.request({
-        method: 'HEAD',
-        host: hostname,
-        path,
-      }, ({ statusCode, headers }) => {
-        if (!headers || (statusCode == 200 && !/text\/html/i.test(headers['content-type']))){
-          reject(new Error('Not a HTML page'));
-        } else {
-          resolve();
-        }
-      });
+      const req = http.request(
+        {
+          method: 'HEAD',
+          host: hostname,
+          path,
+        },
+        ({ statusCode, headers }) => {
+          if (
+            !headers ||
+            (statusCode == 200 && !/text\/html/i.test(headers['content-type']))
+          ) {
+            reject(new Error('Not a HTML page'));
+          } else {
+            resolve();
+          }
+        },
+      );
       req.on('error', reject);
       req.end();
     });
@@ -123,14 +143,17 @@ async function handler(req, res) {
       if (!browser) {
         console.log('🚀 Launch browser!');
         const config = {
-          ...(isDev ? {
-            // executablePath: '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary',
-            executablePath: findChrome(),
-          } : {
-            args: chrome.args,
-            executablePath: await chrome.executablePath,
-            headless: chrome.headless,
-          }),
+          ignoreHTTPSErrors: true,
+          ...(isDev
+            ? {
+                headless: false,
+                executablePath: localChrome,
+              }
+            : {
+                args: chrome.args,
+                executablePath: await chrome.executablePath,
+                headless: chrome.headless,
+              }),
         };
         browser = await puppeteer.launch(config);
       }
@@ -145,7 +168,7 @@ async function handler(req, res) {
         const resourceType = request.resourceType();
 
         // Skip data URIs
-        if (/^data:/i.test(url)){
+        if (/^data:/i.test(url)) {
           request.continue();
           return;
         }
@@ -155,10 +178,10 @@ async function handler(req, res) {
         const otherResources = /^(manifest|other)$/i.test(resourceType);
         // Abort requests that exceeds 15 seconds
         // Also abort if more than 100 requests
-        if (seconds > 15 || reqCount > 100 || actionDone){
+        if (seconds > 15 || reqCount > 100 || actionDone) {
           console.log(`❌⏳ ${method} ${shortURL}`);
           request.abort();
-        } else if (blockedRegExp.test(url) || otherResources){
+        } else if (blockedRegExp.test(url) || otherResources) {
           console.log(`❌ ${method} ${shortURL}`);
           request.abort();
         } else {
@@ -174,7 +197,7 @@ async function handler(req, res) {
       });
       page.on('response', ({ headers }) => {
         const location = headers['location'];
-        if (location && location.includes(host)){
+        if (location && location.includes(host)) {
           responseReject(new Error('Possible infinite redirects detected.'));
         }
       });
@@ -189,13 +212,13 @@ async function handler(req, res) {
         responsePromise,
         page.goto(pageURL, {
           waitUntil: 'networkidle2',
-        })
+        }),
       ]);
 
       // Pause all media and stop buffering
       page.frames().forEach((frame) => {
         frame.evaluate(() => {
-          document.querySelectorAll('video, audio').forEach(m => {
+          document.querySelectorAll('video, audio').forEach((m) => {
             if (!m) return;
             if (m.pause) m.pause();
             m.preload = 'none';
@@ -211,53 +234,65 @@ async function handler(req, res) {
 
     console.log('💥 Perform action: ' + action);
 
-    switch (action){
+    switch (action) {
       case 'render': {
         const raw = searchParams.get('raw') || false;
 
-        const content = await pTimeout(raw ? page.content() : page.evaluate(() => {
-          let content = '';
-          if (document.doctype) {
-            content = new XMLSerializer().serializeToString(document.doctype);
-          }
+        const content = await pTimeout(
+          raw
+            ? page.content()
+            : page.evaluate(() => {
+                let content = '';
+                if (document.doctype) {
+                  content = new XMLSerializer().serializeToString(
+                    document.doctype,
+                  );
+                }
 
-          const doc = document.documentElement.cloneNode(true);
+                const doc = document.documentElement.cloneNode(true);
 
-          // Remove scripts except JSON-LD
-          const scripts = doc.querySelectorAll('script:not([type="application/ld+json"])');
-          scripts.forEach(s => s.parentNode.removeChild(s));
+                // Remove scripts except JSON-LD
+                const scripts = doc.querySelectorAll(
+                  'script:not([type="application/ld+json"])',
+                );
+                scripts.forEach((s) => s.parentNode.removeChild(s));
 
-          // Remove import tags
-          const imports = doc.querySelectorAll('link[rel=import]');
-          imports.forEach(i => i.parentNode.removeChild(i));
+                // Remove import tags
+                const imports = doc.querySelectorAll('link[rel=import]');
+                imports.forEach((i) => i.parentNode.removeChild(i));
 
-          const { origin, pathname } = location;
-          // Inject <base> for loading relative resources
-          if (!doc.querySelector('base')){
-            const base = document.createElement('base');
-            base.href = origin + pathname;
-            doc.querySelector('head').appendChild(base);
-          }
+                const { origin, pathname } = location;
+                // Inject <base> for loading relative resources
+                if (!doc.querySelector('base')) {
+                  const base = document.createElement('base');
+                  base.href = origin + pathname;
+                  doc.querySelector('head').appendChild(base);
+                }
 
-          // Try to fix absolute paths
-          const absEls = doc.querySelectorAll('link[href^="/"], script[src^="/"], img[src^="/"]');
-          absEls.forEach(el => {
-            const href = el.getAttribute('href');
-            const src = el.getAttribute('src');
-            if (src && /^\/[^/]/i.test(src)){
-              el.src = origin + src;
-            } else if (href && /^\/[^/]/i.test(href)){
-              el.href = origin + href;
-            }
-          });
+                // Try to fix absolute paths
+                const absEls = doc.querySelectorAll(
+                  'link[href^="/"], script[src^="/"], img[src^="/"]',
+                );
+                absEls.forEach((el) => {
+                  const href = el.getAttribute('href');
+                  const src = el.getAttribute('src');
+                  if (src && /^\/[^/]/i.test(src)) {
+                    el.src = origin + src;
+                  } else if (href && /^\/[^/]/i.test(href)) {
+                    el.href = origin + href;
+                  }
+                });
 
-          content += doc.outerHTML;
+                content += doc.outerHTML;
 
-          // Remove comments
-          content = content.replace(/<!--[\s\S]*?-->/g, '');
+                // Remove comments
+                content = content.replace(/<!--[\s\S]*?-->/g, '');
 
-          return content;
-        }), 10 * 1000, 'Render timed out');
+                return content;
+              }),
+          10 * 1000,
+          'Render timed out',
+        );
 
         res.writeHead(200, {
           'content-type': 'text/html; charset=UTF-8',
@@ -270,10 +305,14 @@ async function handler(req, res) {
         const format = searchParams.get('format') || null;
         const pageRanges = searchParams.get('pageRanges') || '';
 
-        const pdf = await pTimeout(page.pdf({
-          format,
-          pageRanges,
-        }), 10 * 1000, 'PDF timed out');
+        const pdf = await pTimeout(
+          page.pdf({
+            format,
+            pageRanges,
+          }),
+          10 * 1000,
+          'PDF timed out',
+        );
 
         res.writeHead(200, {
           'content-type': 'application/pdf',
@@ -288,18 +327,26 @@ async function handler(req, res) {
         const clipSelector = searchParams.get('clipSelector');
 
         let screenshot;
-        if (clipSelector){
+        if (clipSelector) {
           const handle = await page.$(clipSelector);
-          if (handle){
-            screenshot = await pTimeout(handle.screenshot({
-              type: 'jpeg',
-            }), 20 * 1000, 'Screenshot timed out');
+          if (handle) {
+            screenshot = await pTimeout(
+              handle.screenshot({
+                type: 'jpeg',
+              }),
+              20 * 1000,
+              'Screenshot timed out',
+            );
           }
         } else {
-          screenshot = await pTimeout(page.screenshot({
-            type: 'jpeg',
-            fullPage,
-          }), 20 * 1000, 'Screenshot timed out');
+          screenshot = await pTimeout(
+            page.screenshot({
+              type: 'jpeg',
+              fullPage,
+            }),
+            20 * 1000,
+            'Screenshot timed out',
+          );
         }
 
         res.writeHead(200, {
@@ -307,11 +354,14 @@ async function handler(req, res) {
           'cache-control': 'public,max-age=31536000',
         });
 
-        if (thumbWidth && thumbWidth < width){
+        if (thumbWidth && thumbWidth < width) {
           const image = await jimp.read(screenshot);
-          image.resize(thumbWidth, jimp.AUTO).quality(90).getBuffer(jimp.MIME_JPEG, (err, buffer) => {
-            res.end(buffer, 'binary');
-          });
+          image
+            .resize(thumbWidth, jimp.AUTO)
+            .quality(90)
+            .getBuffer(jimp.MIME_JPEG, (err, buffer) => {
+              res.end(buffer, 'binary');
+            });
         } else {
           res.end(screenshot, 'binary');
         }
@@ -320,7 +370,7 @@ async function handler(req, res) {
 
     actionDone = true;
     console.log('💥 Done action: ' + action);
-    if (!cache.has(pageURL)){
+    if (!cache.has(pageURL)) {
       cache.set(pageURL, page);
 
       // Try to stop all execution
@@ -329,9 +379,9 @@ async function handler(req, res) {
           // Clear all timer intervals https://stackoverflow.com/a/6843415/20838
           for (var i = 1; i < 99999; i++) window.clearInterval(i);
           // Disable all XHR requests
-          XMLHttpRequest.prototype.send = _=>_;
+          XMLHttpRequest.prototype.send = (_) => _;
           // Disable all RAFs
-          requestAnimationFrame = _=>_;
+          requestAnimationFrame = (_) => _;
         });
       });
     }
@@ -350,7 +400,7 @@ async function handler(req, res) {
     res.end('Oops. Something is wrong.\n\n' + message);
 
     // Handle websocket not opened error
-    if (/not opened/i.test(message) && browser){
+    if (/not opened/i.test(message) && browser) {
       console.error('🕸 Web socket failed');
       try {
         browser.close();
@@ -361,7 +411,7 @@ async function handler(req, res) {
       }
     }
   }
-};
+}
 
 module.exports = handler;
 
@@ -369,7 +419,7 @@ if (isDev) {
   const PORT = process.env.PORT || 3000;
   const listen = () => console.log(`Listening on ${PORT}...`);
   require('http').createServer(handler).listen(PORT, listen);
-};
+}
 
 process.on('SIGINT', () => {
   if (browser) browser.close();
