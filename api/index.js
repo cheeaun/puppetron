@@ -1,3 +1,4 @@
+const { CAPTCHA_SECRET, NOW_REGION, VERCEL_REGION } = process.env;
 const fs = require('fs');
 const http = require('http');
 const { URL } = require('url');
@@ -5,7 +6,13 @@ const { URL } = require('url');
 const chrome = require('chrome-aws-lambda');
 const puppeteer = require('puppeteer-core');
 
-const isDev = process.env.NOW_REGION === 'dev1';
+const { verify } = require('hcaptcha');
+
+const isDev =
+  NOW_REGION === 'dev1' ||
+  VERCEL_REGION === 'dev1' ||
+  (!NOW_REGION && !VERCEL_REGION);
+// console.log({ isDev });
 
 const jimp = require('jimp');
 const pTimeout = require('p-timeout');
@@ -108,6 +115,9 @@ async function handler(req, res) {
     if (!/^https?:\/\//i.test(pageURL)) {
       throw new Error('Invalid URL');
     }
+
+    const token = searchParams.get('token');
+    await verify(CAPTCHA_SECRET, token);
 
     const { hostname, pathname } = new URL(pageURL);
     const path = decodeURIComponent(pathname);

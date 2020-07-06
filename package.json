@@ -1,9 +1,10 @@
 {
   "name": "puppetron",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "license": "MIT",
   "dependencies": {
     "chrome-aws-lambda": "~3.1.1",
+    "hcaptcha": "0.0.2",
     "jimp": "~0.12.1",
     "lru-cache": "~5.1.1",
     "p-timeout": "~3.2.0",
@@ -13,6 +14,6 @@
     "chrome-finder": "https://github.com/simplemerchant/chrome-finder.git"
   },
   "scripts": {
-    "start": "now dev"
+    "start": "vercel dev"
   }
 }

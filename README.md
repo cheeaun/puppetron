@@ -79,16 +79,14 @@ Parameters:
 
 ### Requirements
 
-- Node.js
-- Docker
+- [Node.js](https://nodejs.org/en/)
+- [Vercel](https://vercel.com/download)
 
 #### Steps
 
-1. `npm install`
+1. `npm i`
 2. `npm start`
 3. Load `localhost:3000`
-
-[![Deploy to now](https://deploy.now.sh/static/button.svg)](https://deploy.now.sh/?repo=https://github.com/cheeaun/puppetron)
 
 ## Credits
 
